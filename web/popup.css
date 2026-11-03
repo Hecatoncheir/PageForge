@@ -1,0 +1,9 @@
+html,
+body {
+  width: 400px;
+  height: 580px;
+  margin: 0;
+  overflow: hidden;
+  background: #17171d;
+}
+

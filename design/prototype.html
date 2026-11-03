@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PageForge — прототип расширения</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="prototype.css">
+</head>
+<body class="prototype-page">
+  <header class="prototype-chrome">
+    <a class="wordmark" href="index.html"><svg aria-hidden="true"><use href="assets/marks.svg#forge"></use></svg>PageForge</a>
+    <span class="mono subtle">ПРОТОТИП РАСШИРЕНИЯ</span>
+    <div><a href="brand.html">Айдентика</a><button class="icon-button" data-theme-toggle aria-label="Светлая тема"></button></div>
+  </header>
+
+  <main class="app-window" aria-label="PageForge">
+    <div class="segmented" role="tablist" aria-label="Режим">
+      <span class="segment-indicator" aria-hidden="true"></span>
+      <button role="tab" aria-selected="true" aria-controls="appearance-panel" id="appearance-tab" data-tab="appearance">Отображение</button>
+      <button role="tab" aria-selected="false" aria-controls="development-panel" id="development-tab" data-tab="development" tabindex="-1">Разработка</button>
+    </div>
+    <header class="app-header">
+      <a class="wordmark" href="index.html" target="_top"><svg aria-hidden="true"><use href="assets/marks.svg#forge"></use></svg>PageForge</a>
+      <span class="app-site mono"><span data-icon="globe"></span>journal.example</span>
+    </header>
+
+    <section id="appearance-panel" class="app-panel" role="tabpanel" aria-labelledby="appearance-tab">
+      <button class="original-option" id="original-option"><span data-icon="reset"></span>Исходное отображение<span class="original-status"></span></button>
+      <div class="appearance-scroll"><div class="appearance-grid" role="radiogroup" aria-label="Вариант отображения"></div></div>
+    </section>
+
+    <section id="development-panel" class="app-panel development-panel" role="tabpanel" aria-labelledby="development-tab" hidden>
+      <button class="drop-area" id="add-zip">
+        <span class="area-icon" data-icon="upload"></span>
+        <strong>Добавить</strong>
+        <span class="area-subtitle">Перетащите ZIP или выберите файл</span>
+        <span class="zip-pill mono">.ZIP</span>
+      </button>
+      <input type="file" id="zip-input" accept=".zip,application/zip" hidden>
+      <button class="export-area" id="export-zip">
+        <span class="export-icon" data-icon="package"></span>
+        <span><strong>Выгрузить</strong><span class="area-subtitle" id="export-description">Текущее оформление</span></span>
+        <span data-icon="arrow"></span>
+      </button>
+    </section>
+    <footer class="app-footer"><span class="local-indicator"></span><span id="app-status">Только для этого сайта</span><span class="mono">ZIP ↔</span></footer>
+  </main>
+
+  <footer class="prototype-footer"><span>Демонстрационные оформления · изменения остаются в прототипе</span><button id="sample-zip">Скачать пример ZIP <span data-icon="download"></span></button></footer>
+  <div class="toast" role="status" aria-live="polite"></div>
+  <script src="assets/vendor/fflate.js"></script>
+  <script src="shared.js"></script>
+  <script src="prototype.js"></script>
+</body>
+</html>

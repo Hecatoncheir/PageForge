@@ -1,0 +1,56 @@
+@import url('assets/fonts/fonts.css');
+
+:root {
+  color-scheme: dark;
+  --bg: #282828;
+  --surface: #32302f;
+  --raised: #3c3836;
+  --line: #504945;
+  --ink: #fbf1c7;
+  --muted: #bdae93;
+  --accent: #fe8019;
+  --accent-ink: #282828;
+  --green: #b8bb26;
+  --danger: #fb4934;
+  --shadow: 0 28px 80px #1d202180;
+  --ease: cubic-bezier(.2, .8, .2, 1);
+}
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #fbf1c7;
+  --surface: #f2e5bc;
+  --raised: #ebdbb2;
+  --line: #d5c4a1;
+  --ink: #282828;
+  --muted: #665c54;
+  --accent: #af3a03;
+  --accent-ink: #fbf1c7;
+  --green: #79740e;
+  --danger: #9d0006;
+  --shadow: 0 28px 80px #665c5426;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'Nunito Sans', sans-serif; -webkit-font-smoothing: antialiased; }
+body, button, a, .surface { transition: background-color 280ms var(--ease), color 280ms var(--ease), border-color 200ms var(--ease); }
+button, input { font: inherit; }
+button, a { -webkit-tap-highlight-color: transparent; }
+button { cursor: pointer; color: inherit; }
+a { color: inherit; text-decoration: none; }
+button { border: 0; }
+button:active, .button:active { transform: scale(.97); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 5px; }
+svg.icon { width: 22px; height: 22px; flex-shrink: 0; fill: none; stroke: currentColor; }
+.icon-button { width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: transparent; }
+.icon-button:hover { background: var(--raised); }
+.mono { font-family: 'JetBrains Mono', monospace; }
+.wordmark { display: inline-flex; align-items: center; gap: 10px; font: 900 25px 'Nunito', sans-serif; letter-spacing: -1px; }
+.wordmark svg { width: 32px; height: 38px; color: var(--accent); }
+.button { display: inline-flex; justify-content: center; align-items: center; gap: 11px; padding: 16px 23px; border-radius: 14px; background: var(--accent); color: var(--accent-ink); font-weight: 800; transition: transform 180ms var(--ease), box-shadow 200ms var(--ease); }
+.button:hover { transform: translateY(-2px); box-shadow: 0 8px 24px #d65d0e22; }
+.button.secondary { color: var(--ink); background: var(--raised); box-shadow: none; }
+.subtle { color: var(--muted); }
+.toast { position: fixed; left: 50%; bottom: 22px; z-index: 20; max-width: calc(100% - 32px); padding: 12px 20px; background: var(--ink); color: var(--bg); border-radius: 14px; font-size: 13px; pointer-events: none; opacity: 0; transform: translate(-50%, 10px); transition: opacity 200ms var(--ease), transform 200ms var(--ease); }
+.toast.visible { opacity: 1; transform: translate(-50%, 0); }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
