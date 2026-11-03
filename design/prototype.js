@@ -145,6 +145,7 @@
       if (manifest.schemaVersion !== 1) throw new Error('Неподдерживаемая версия пакета');
       if (manifest.site !== 'journal.example') throw new Error('Прототип принимает варианты для journal.example');
       const css = fflate.strFromU8(files['styles.css']);
+      if (css.length > 64 * 1024) throw new Error('В прототипе styles.css ограничен 64 КБ');
       const keys = ['bg', 'ink', 'accent'];
       const colors = keys.map((key, index) => css.match(new RegExp(`--preview-${key}\\s*:\\s*(#[a-fA-F0-9]{6})(?=\\s*[;}])`))?.[1] ?? manifest.colors?.[index]);
       const profile = { id: manifest.id, name: manifest.name, version: manifest.version, style: manifest.style, colors, css };

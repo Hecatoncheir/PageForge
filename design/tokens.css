@@ -44,7 +44,7 @@ svg.icon { width: 22px; height: 22px; flex-shrink: 0; fill: none; stroke: curren
 .icon-button:hover { background: var(--raised); }
 .mono { font-family: 'JetBrains Mono', monospace; }
 .wordmark { display: inline-flex; align-items: center; gap: 10px; font: 900 25px 'Nunito', sans-serif; letter-spacing: -1px; }
-.wordmark svg { width: 32px; height: 38px; color: var(--accent); }
+.wordmark svg { width: 32px; height: 38px; color: var(--ink); }
 .button { display: inline-flex; justify-content: center; align-items: center; gap: 11px; padding: 16px 23px; border-radius: 14px; background: var(--accent); color: var(--accent-ink); font-weight: 800; transition: transform 180ms var(--ease), box-shadow 200ms var(--ease); }
 .button:hover { transform: translateY(-2px); box-shadow: 0 8px 24px #d65d0e22; }
 .button.secondary { color: var(--ink); background: var(--raised); box-shadow: none; }

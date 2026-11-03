@@ -1,4 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 112" fill="none">
-  <title>PageForge — страница в пламени</title>
-  <path fill="currentColor" fill-rule="evenodd" d="M49 3c9 24 29 31 32 52 4 25-11 46-34 49C24 107 8 92 9 70c1-22 20-35 23-54 11 9 16 18 13 29C58 31 59 17 49 3ZM36 44a5 5 0 0 0-5 5v29a5 5 0 0 0 5 5h25a5 5 0 0 0 5-5V56L54 44H36Zm17 3v12h12L53 47Z" clip-rule="evenodd"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 112 112">
+  <title>PageForge — штамп мастерской</title>
+  <path fill="currentColor" fill-rule="evenodd" d="M29 7C47-3 55 13 72 8c23-6 36 11 32 30-4 18 12 31 2 49-10 20-29 13-46 18-21 7-34-4-43-15C6 78-6 62 5 45 16 28 12 17 29 7Z M32 31h31c12 0 18 7 18 17S74 66 62 66H48v18H32V31Z M48 45v8h12c4 0 5-2 5-4s-1-4-5-4H48Z"/>
+  <path fill="#fe8019" d="m84 19 3 7 8 1-6 5 1 8-6-4-7 4 2-8-6-5 8-1Z"/>
 </svg>

@@ -6,7 +6,7 @@ import { Resvg } from '@resvg/resvg-js';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const assets = path.join(root, 'design/assets');
 const variants = [
-  ['forge', 'logo.svg'], ['fold', 'logo-fold.svg'], ['stamp', 'logo-stamp.svg'],
+  ['forge', 'logo.svg'], ['stamp', 'logo-stamp.svg'],
   ['monogram', 'logo-monogram.svg'], ['ligature', 'logo-ligature.svg'],
   ['imprint', 'logo-imprint.svg'],
 ];
@@ -18,8 +18,8 @@ const symbols = variants.map(([id, file]) => {
 });
 writeFileSync(path.join(assets, 'marks.svg'), `<svg xmlns="http://www.w3.org/2000/svg">${symbols.join('')}</svg>\n`);
 const logo = readFileSync(path.join(assets, 'logo.svg'), 'utf8');
-const content = logo.replace(/^[\s\S]*?<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '').replaceAll('currentColor', '#fe8019');
-const square = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><rect width="128" height="128" rx="29" fill="#282828"/><g transform="translate(16 8)">${content}</g></svg>`;
+const content = logo.replace(/^[\s\S]*?<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '').replaceAll('currentColor', '#fbf1c7');
+const square = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><rect width="128" height="128" rx="29" fill="#282828"/><g transform="translate(8 8)">${content}</g></svg>`;
 mkdirSync(path.join(root, 'extension/icons'), { recursive: true });
 for (const width of [16, 32, 48, 128]) {
   const png = new Resvg(square, { fitTo: { mode: 'width', value: width } }).render().asPng();
