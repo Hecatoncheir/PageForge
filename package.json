@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "lint:firefox": "node tools/lint-firefox.mjs",
-    "test:browser": "node tools/smoke-extension.mjs"
+    "test:browser": "node tools/smoke-extension.mjs",
+    "test:design": "node tools/test-design.mjs"
   },
   "engines": {
     "node": ">=24"

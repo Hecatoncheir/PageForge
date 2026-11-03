@@ -65,7 +65,17 @@ h1 span::after { content: ''; position: absolute; height: 7px; left: 2px; right:
 .site-footer a { display: flex; align-items: center; gap: 7px; }
 .site-footer .icon { width: 13px; height: 13px; color: var(--accent); }
 .tiny-dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--green); margin-right: 5px; }
-@media (min-width: 1150px) and (min-height: 760px) { .site-shell { height: 100svh; } }
+@media (min-width: 950px) and (min-height: 650px) {
+  .site-shell { height: 100svh; grid-template-rows: 86px minmax(0,1fr) 60px; }
+  .hero { min-height: 0; padding: 15px 0 25px; }
+  .hero-stage { height: min(548px, calc(100svh - 190px)); }
+}
+@media (min-width: 950px) and (max-height: 800px) {
+  .popup-preview { top: -37px; transform: scale(.72) rotate(2deg); }
+  .demo-browser { top: 55px; height: 370px; }
+  .stage-orbit { width: 370px; height: 370px; }
+  .stage-note { bottom: 0; right: 20px; }
+}
 @media (max-width: 1150px) { .hero { grid-template-columns: 1fr 1fr; } h1 { font-size: 49px; letter-spacing: -2px; } .popup-preview { right: -12px; transform: scale(.77) rotate(2deg); } .demo-browser { width: 95%; } .hero-stage { height: 510px; } .stage-orbit { width: 350px; height: 350px; } .source-link { font-size: 12px; } }
 @media (max-width: 850px) { .site-shell { grid-template-rows: 80px 1fr auto; padding: 0 6%; } .site-header nav { gap: 15px; } .site-header nav > a:nth-child(2) { display: none; } .hero { grid-template-columns: 1fr; gap: 40px; padding-top: 30px; } .hero-copy { text-align: center; } h1 { font-size: clamp(42px, 8vw, 68px); } .hero-actions,.compatibility { justify-content: center; } .hero-stage { width: min(600px, 100%); margin: auto; } .popup-preview { right: 0; transform: scale(.82) rotate(2deg); } .demo-browser { width: 80%; } .stage-orbit { left: 10%; } .site-footer { padding: 24px 0; flex-wrap: wrap; } .site-footer > div { gap: 14px; flex-wrap: wrap; } }
 @media (max-width: 480px) { .site-header nav > a:first-child { display: none; } .wordmark { font-size: 22px; } .hero-description { font-size: 15px; } .hero-actions { gap: 18px; } .hero-stage { height: 510px; } .popup-preview { transform: scale(.79); right: -4px; } .demo-browser { width: 93%; top: 85px; } .journal { padding: 15px; } .stage-note { right: 24px; } .source-link { display: none; } .site-footer > div > span { display: none; } }

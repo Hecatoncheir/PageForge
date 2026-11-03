@@ -60,3 +60,7 @@ runs:
       shell: bash
       run: npm run test:browser
 
+    - name: Проверить HTML-прототипы
+      shell: bash
+      run: npm run test:design
+

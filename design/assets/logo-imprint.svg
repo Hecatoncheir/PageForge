@@ -1,7 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 112 112" fill="none">
   <title>PageForge — пластичный оттиск страницы</title>
-  <path fill="currentColor" d="M33 8c15-7 27 1 39 1 18 0 28 14 25 31-3 14 9 26 2 43-6 16-24 15-39 18-22 5-31-1-42-12C5 76 4 62 12 46c8-15 7-31 21-38Z"/>
-  <path fill="#fbf1c7" d="M37 29c-5 0-9 4-9 9v37c0 5 4 9 9 9h34c5 0 9-4 9-9V47L62 29H37Z"/>
+  <path fill="currentColor" fill-rule="evenodd" d="M33 8c15-7 27 1 39 1 18 0 28 14 25 31-3 14 9 26 2 43-6 16-24 15-39 18-22 5-31-1-42-12C5 76 4 62 12 46c8-15 7-31 21-38Z M37 29c-5 0-9 4-9 9v37c0 5 4 9 9 9h34c5 0 9-4 9-9V47L62 29H37Z"/>
   <path fill="currentColor" d="M60 29v20h20L60 29Z"/>
   <path stroke="currentColor" stroke-width="6" stroke-linecap="round" d="M41 60h22M41 71h14"/>
   <path fill="#fe8019" d="m96 7 3 8 8 3-8 3-3 8-3-8-8-3 8-3 3-8Z"/>

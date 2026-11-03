@@ -25,6 +25,17 @@ jobs:
 
       - uses: ./.github/actions/build
 
+      - name: Сохранить снимки проверок
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: pageforge-screenshots
+          path: |
+            work/browser-checks/
+            work/design-checks/
+          if-no-files-found: ignore
+          retention-days: 7
+
       - name: Сохранить пакеты
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:

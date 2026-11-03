@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, rm, mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { chromium } from 'playwright';
@@ -7,6 +7,9 @@ import { chromium } from 'playwright';
 const extensionPath = path.resolve('dist/chrome');
 const profile = await mkdtemp(path.join(tmpdir(), 'pageforge-browser-'));
 let context;
+let page;
+const diagnostics = path.resolve('work/browser-checks');
+await mkdir(diagnostics, { recursive: true });
 try {
   context = await chromium.launchPersistentContext(profile, {
     channel: 'chromium',
@@ -21,7 +24,7 @@ try {
     ?? await context.waitForEvent('serviceworker');
   const workerUrl = new URL(worker.url());
   const extensionOrigin = `${workerUrl.protocol}//${workerUrl.hostname}`;
-  const page = await context.newPage();
+  page = await context.newPage();
   const errors = [];
   const remoteRequests = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -33,7 +36,7 @@ try {
   await page.getByRole('button', { name: 'Разработка', exact: true }).waitFor({ timeout: 60000 });
   await page.getByText('Здесь появятся ваши варианты', { exact: true }).waitFor();
   await page.getByRole('button', { name: 'Разработка', exact: true }).click();
-  await page.getByText('Перетащить ZIP или выбрать файл', { exact: true }).waitFor();
+  await page.getByRole('button', { name: /Добавить/ }).waitFor();
   await page.getByRole('button', { name: 'Отображение', exact: true }).click();
   await page.getByText('Здесь появятся ваши варианты', { exact: true }).waitFor();
   const browserContext = JSON.parse(await page.evaluate(() => pageForge.getContext()));
@@ -41,7 +44,14 @@ try {
   assert.equal(typeof browserContext.siteLabel, 'string');
   assert.deepEqual(errors, [], 'Ошибки запуска интерфейса');
   assert.deepEqual(remoteRequests, [], 'Интерфейс обращается к внешним ресурсам');
+  await page.screenshot({ path: path.join(diagnostics, 'extension.png') });
   console.log('Расширение загружено: Flutter, переключение вкладок и связь с браузером работают.');
+} catch (error) {
+  if (page) {
+    await page.screenshot({ path: path.join(diagnostics, 'extension-failure.png') });
+    await writeFile(path.join(diagnostics, 'extension-failure.html'), await page.content());
+  }
+  throw error;
 } finally {
   await context?.close();
   const resolved = path.resolve(profile);
