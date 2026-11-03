@@ -5,13 +5,13 @@
 .brand-heading .mono { font-size: 9px; letter-spacing: 2px; }
 .brand-heading h1 { font: 900 32px/1.1 'Nunito',sans-serif; margin: 10px 0 0; letter-spacing: -1px; }
 .brand-heading > span { font-size: 12px; }
-.logo-proposals { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; }
+.logo-proposals { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; }
 .logo-proposal { background: var(--surface); border: 1px solid var(--line); padding: 18px; border-radius: 20px; overflow: hidden; }
 .logo-proposal.recommended { border-color: var(--accent); }
 .proposal-meta { display: flex; justify-content: space-between; align-items: center; font-size: 8px; letter-spacing: 1px; color: var(--muted); }
 .proposal-meta > span:last-child:not(:first-child) { color: var(--accent); font: 700 9px 'Nunito Sans',sans-serif; letter-spacing: 0; }
 .logo-display { height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
-.logo-display svg { width: 75px; height: 88px; color: var(--accent); }
+.logo-display svg { width: 75px; height: 88px; color: var(--ink); }
 .logo-display strong { font: 900 32px 'Nunito',sans-serif; letter-spacing: -1.5px; }
 .logo-proposal:nth-child(2) .logo-display svg { color: var(--ink); }
 .logo-proposal:nth-child(3) .logo-display svg { color: var(--ink); width: 85px; }
@@ -38,5 +38,5 @@
 .icon-gallery > span { display: flex; align-items: center; justify-content: center; width: 45px; height: 45px; border-radius: 12px; background: var(--surface); color: var(--ink); transition: color 180ms var(--ease),transform 180ms var(--ease); }
 .icon-gallery > span:hover { color: var(--accent); transform: translateY(-3px); }
 .brand-footer { display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: 10px; gap: 20px; }
-@media (max-width: 1000px) { .type-samples { gap: 10px; flex-wrap: wrap; } .brand-details { gap: 25px; } .logo-display { height: 185px; } .brand-heading h1 { font-size: 29px; } }
+@media (max-width: 1000px) { .logo-proposals { grid-template-columns: repeat(2,1fr); } .type-samples { gap: 10px; flex-wrap: wrap; } .brand-details { gap: 25px; } .logo-display { height: 185px; } .brand-heading h1 { font-size: 29px; } }
 @media (max-width: 700px) { .brand-shell { grid-template-rows: 80px 1fr 75px; } .brand-heading { display: block; margin-top: 20px; } .brand-heading > span { display: block; margin-top: 12px; } .logo-proposals { grid-template-columns: 1fr; } .logo-display { height: 180px; } .brand-details { grid-template-columns: 1fr; } .icon-gallery { display: grid; grid-template-columns: repeat(6,1fr); } .icon-gallery > span { width: 36px; height: 36px; } .brand-footer > span { display: none; } }

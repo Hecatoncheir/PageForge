@@ -5,7 +5,11 @@ import { Resvg } from '@resvg/resvg-js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const assets = path.join(root, 'design/assets');
-const variants = [['forge', 'logo.svg'], ['fold', 'logo-fold.svg'], ['stamp', 'logo-stamp.svg']];
+const variants = [
+  ['forge', 'logo.svg'], ['fold', 'logo-fold.svg'], ['stamp', 'logo-stamp.svg'],
+  ['monogram', 'logo-monogram.svg'], ['ligature', 'logo-ligature.svg'],
+  ['imprint', 'logo-imprint.svg'],
+];
 const symbols = variants.map(([id, file]) => {
   const svg = readFileSync(path.join(assets, file), 'utf8');
   const viewBox = svg.match(/viewBox="([^"]+)"/)[1];

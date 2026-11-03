@@ -10,4 +10,21 @@
   <path fill="currentColor" d="M29 7C47-3 55 13 72 8c23-6 36 11 32 30-4 18 12 31 2 49-10 20-29 13-46 18-21 7-34-4-43-15C6 78-6 62 5 45 16 28 12 17 29 7Z"/>
   <path fill="#fbf1c7" d="M32 31h31c12 0 18 7 18 17S74 66 62 66H48v18H32V31Zm16 14v8h12c4 0 5-2 5-4s-1-4-5-4H48Z"/>
   <path fill="#fe8019" d="m84 19 3 7 8 1-6 5 1 8-6-4-7 4 2-8-6-5 8-1Z"/>
+</symbol><symbol id="monogram" viewBox="0 0 112 112">
+  <title>PageForge — мягкая монограмма PF</title>
+  <path fill="currentColor" d="M31 6c16-6 23 2 37 0 23-3 37 12 35 33-2 15 10 28 1 43-10 18-24 17-39 21-21 7-36 2-46-10C7 79 1 62 7 47 12 33 13 13 31 6Z"/>
+  <path stroke="#fbf1c7" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" d="M31 79V36h11c18 0 18 23 0 23H31m39 20V36h14M70 56h11"/>
+  <circle cx="89" cy="89" r="5" fill="#fe8019"/>
+</symbol><symbol id="ligature" viewBox="0 0 112 112">
+  <title>PageForge — слитный буквенный знак</title>
+  <path fill="currentColor" fill-rule="evenodd" d="M11 94V42C11 22 23 13 40 13c15 0 27 10 27 26 0 18-12 30-28 30H29v25H11Zm18-41h10c8 0 12-5 12-13 0-7-5-11-12-11-6 0-10 4-10 11v13Z" clip-rule="evenodd"/>
+  <path fill="currentColor" d="M59 91V33C59 17 69 7 84 7c7 0 13 2 18 5l-6 15c-4-2-7-3-10-3-5 0-8 3-8 9v8h22v17H78v33H59Z"/>
+  <path stroke="#fe8019" stroke-width="7" stroke-linecap="round" d="M94 79v16m-8-8h16"/>
+</symbol><symbol id="imprint" viewBox="0 0 112 112">
+  <title>PageForge — пластичный оттиск страницы</title>
+  <path fill="currentColor" d="M33 8c15-7 27 1 39 1 18 0 28 14 25 31-3 14 9 26 2 43-6 16-24 15-39 18-22 5-31-1-42-12C5 76 4 62 12 46c8-15 7-31 21-38Z"/>
+  <path fill="#fbf1c7" d="M37 29c-5 0-9 4-9 9v37c0 5 4 9 9 9h34c5 0 9-4 9-9V47L62 29H37Z"/>
+  <path fill="currentColor" d="M60 29v20h20L60 29Z"/>
+  <path stroke="currentColor" stroke-width="6" stroke-linecap="round" d="M41 60h22M41 71h14"/>
+  <path fill="#fe8019" d="m96 7 3 8 8 3-8 3-3 8-3-8-8-3 8-3 3-8Z"/>
 </symbol></svg>

@@ -1,0 +1,62 @@
+name: Сборка и проверка PageForge
+description: Подготовить Flutter, проверить приложение и собрать пакеты браузеров.
+
+runs:
+  using: composite
+  steps:
+    - name: Прочитать версию Flutter
+      id: flutter
+      shell: bash
+      run: echo "version=$(tr -d '\r\n' < .flutter-version)" >> "$GITHUB_OUTPUT"
+
+    - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+      with:
+        flutter-version: ${{ steps.flutter.outputs.version }}
+        channel: stable
+        cache: true
+
+    - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+      with:
+        node-version: '24'
+        cache: npm
+
+    - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+      with:
+        python-version: '3.13'
+
+    - name: Установить зависимости
+      shell: bash
+      run: |
+        flutter pub get --enforce-lockfile
+        npm ci
+
+    - name: Проверить исходные файлы
+      shell: bash
+      run: |
+        dart format --output=none --set-exit-if-changed lib test
+        flutter analyze --fatal-infos
+        node --check extension/background.js
+        node --check web/bridge.js
+
+    - name: Проверить интерфейс и упаковку
+      shell: bash
+      run: |
+        flutter test
+        python -m unittest discover -s tools -p 'test_*.py' -v
+
+    - name: Собрать Flutter и пакеты браузеров
+      shell: bash
+      run: python tools/build.py
+
+    - name: Проверить пакет Firefox
+      shell: bash
+      run: npm run lint:firefox
+
+    - name: Подготовить Chromium для проверки запуска
+      shell: bash
+      run: npx playwright install --with-deps chromium
+
+    - name: Проверить запуск расширения
+      shell: bash
+      run: npm run test:browser
+

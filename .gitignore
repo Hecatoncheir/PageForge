@@ -1,8 +1,8 @@
 .dart_tool/
 .flutter-plugins-dependencies
-build/
-dist/
-release/
+/build/
+/dist/
+/release/
 node_modules/
 coverage/
 work/
