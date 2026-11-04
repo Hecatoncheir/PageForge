@@ -117,6 +117,7 @@ try {
   });
   await upload(updated);
   await site.waitForFunction(() => getComputedStyle(document.querySelector('p')).fontWeight === '700');
+  await popup.getByRole('button', { name: 'Применить Бумага', exact: true }).waitFor();
   assert.equal(await popup.getByRole('button', { name: 'Применить Бумага', exact: true }).count(), 1);
   const files = await exportedFiles(tabId, 'paper');
   assert.equal(strFromU8(files['assets/note.txt']), 'Ресурс должен сохраниться');

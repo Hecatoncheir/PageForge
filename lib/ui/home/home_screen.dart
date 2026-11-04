@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../domain/models/appearance.dart';
@@ -67,58 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            DecoratedBox(
-              decoration: BoxDecoration(
-                color: colors.surfaceContainerLow,
-                border: Border.all(color: colors.outline),
-                borderRadius: BorderRadius.circular(13),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(4),
-                child: SegmentedButton<HomeTab>(
-                  showSelectedIcon: false,
-                  style: ButtonStyle(
-                    visualDensity: VisualDensity.compact,
-                    side: const WidgetStatePropertyAll(BorderSide.none),
-                    shape: WidgetStatePropertyAll(
-                      RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(9),
-                      ),
-                    ),
-                    backgroundColor: WidgetStateProperty.resolveWith(
-                      (states) => states.contains(WidgetState.selected)
-                          ? colors.surfaceContainerHighest
-                          : Colors.transparent,
-                    ),
-                    foregroundColor: WidgetStateProperty.resolveWith(
-                      (states) => states.contains(WidgetState.selected)
-                          ? colors.onSurface
-                          : colors.onSurfaceVariant,
-                    ),
-                    textStyle: const WidgetStatePropertyAll(
-                      TextStyle(
-                        fontFamily: 'NunitoSans',
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                  segments: const [
-                    ButtonSegment(
-                      value: HomeTab.appearance,
-                      label: Text('Отображение'),
-                    ),
-                    ButtonSegment(
-                      value: HomeTab.development,
-                      label: Text('Разработка'),
-                    ),
-                  ],
-                  selected: {_tab},
-                  onSelectionChanged: (selection) =>
-                      _selectTab(selection.single),
-                ),
-              ),
-            ),
+            _ModeSelector(value: _tab, onChanged: _selectTab),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 18),
               child: Row(
@@ -232,6 +182,57 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _ModeSelector extends StatelessWidget {
+  const _ModeSelector({required this.value, required this.onChanged});
+
+  final HomeTab value;
+  final ValueChanged<HomeTab> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    const labels = {
+      HomeTab.appearance: 'Отображение',
+      HomeTab.development: 'Разработка',
+    };
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        border: Border.all(color: colors.outline),
+        borderRadius: BorderRadius.circular(13),
+      ),
+      child: CupertinoSlidingSegmentedControl<HomeTab>(
+        groupValue: value,
+        backgroundColor: Colors.transparent,
+        thumbColor: colors.surfaceContainerHighest,
+        padding: const EdgeInsets.all(4),
+        onValueChanged: (selected) {
+          if (selected != null) onChanged(selected);
+        },
+        children: {
+          for (final entry in labels.entries)
+            entry.key: SizedBox(
+              height: 34,
+              child: Center(
+                child: Text(
+                  entry.value,
+                  style: TextStyle(
+                    fontFamily: 'NunitoSans',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    color: value == entry.key
+                        ? colors.onSurface
+                        : colors.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ),
+        },
       ),
     );
   }

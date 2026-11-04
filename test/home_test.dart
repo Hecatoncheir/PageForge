@@ -31,6 +31,12 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Исходное отображение'), findsOneWidget);
     expect(tester.takeException(), isNull);
+    final start = tester.getCenter(find.text('Отображение'));
+    final finish = tester.getCenter(find.text('Разработка'));
+    await tester.dragFrom(start, finish - start);
+    await tester.pumpAndSettle();
+    expect(find.text('Добавить'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   test('Ошибка браузерного API отображается в состоянии интерфейса', () async {
