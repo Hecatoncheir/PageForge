@@ -5,6 +5,12 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      verify_public_repository:
+        description: 'Проверить загрузку и релизы настоящего PageForge-github.com через сеть'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -18,6 +24,8 @@ jobs:
     name: Проверка и сборка
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    env:
+      PAGEFORGE_TEST_REPOSITORY: ${{ inputs.verify_public_repository && 'https://github.com/Hecatoncheir/PageForge-github.com' || '' }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
