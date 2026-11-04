@@ -1,13 +1,13 @@
 {
   "name": "pageforge-tools",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
     "lint:firefox": "node tools/lint-firefox.mjs",
     "test:browser": "node tools/smoke-extension.mjs",
     "test:design": "node tools/test-design.mjs",
-    "test:profiles": "node --test tools/profiles.test.mjs tools/downloads.test.mjs"
+    "test:profiles": "node --test tools/profiles.test.mjs tools/downloads.test.mjs tools/repositories.test.mjs"
   },
   "engines": {
     "node": ">=24"

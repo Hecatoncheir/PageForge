@@ -20,7 +20,10 @@ h1 span::after { content: ''; position: absolute; height: 7px; left: 2px; right:
 .version { border-left: 1px solid var(--line); padding-left: 15px; margin-left: 10px; font-size: 8px; letter-spacing: 1px; }
 .browser-symbol { width: 15px; height: 15px; display: inline-block; border: 1.4px solid currentColor; border-radius: 50%; }
 .chrome-symbol { background: radial-gradient(circle, transparent 0 3px, currentColor 3.5px 4px, transparent 4.5px), conic-gradient(transparent 0deg 110deg, currentColor 110deg 119deg, transparent 119deg 230deg, currentColor 230deg 239deg, transparent 239deg 350deg, currentColor 350deg 360deg); }
-.firefox-symbol { margin-left: 9px; border-radius: 55% 38% 52% 45%; transform: rotate(-23deg); box-shadow: inset 3px -2px 0 currentColor; }
+.firefox-symbol { border-radius: 55% 38% 52% 45%; transform: rotate(-23deg); box-shadow: inset 3px -2px 0 currentColor; }
+.browser-download { display: inline-flex; align-items: center; gap: 8px; padding: 4px 0; border-radius: 4px; }
+.browser-download + .browser-download { margin-left: 9px; }
+.browser-download:hover { color: var(--accent); }
 .hero-stage { height: 548px; position: relative; min-width: 0; isolation: isolate; }
 .stage-orbit { position: absolute; width: 450px; height: 450px; border: 1px solid var(--line); border-radius: 50%; left: 8%; top: 24px; z-index: -1; opacity: .65; }
 .stage-orbit::after { content: ''; position: absolute; inset: 35px; border: 1px dashed var(--line); border-radius: 50%; }

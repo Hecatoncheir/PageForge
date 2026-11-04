@@ -37,6 +37,7 @@ runs:
         flutter analyze --fatal-infos
         node --check extension/background.js
         node --check web/bridge.js
+        node --check web/repositories.js
 
     - name: Проверить интерфейс и упаковку
       shell: bash

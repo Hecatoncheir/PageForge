@@ -242,7 +242,7 @@
 
   async function updateRegistrations() {
     const { origins = [] } = await api.permissions.getAll();
-    const matches = origins.filter((origin) => /^https?:\/\//.test(origin));
+    const matches = origins.filter((origin) => /^https?:\/\//.test(origin) && !PageForgeRepositories.origins.includes(origin));
     const id = 'pageforge-sites';
     const registered = await api.scripting.getRegisteredContentScripts({ ids: [id] });
     if (registered.length) await api.scripting.unregisterContentScripts({ ids: [id] });
@@ -263,6 +263,11 @@
   async function handle(command, args = {}) {
     if (command === 'state') return state(args);
     if (command === 'import') return importArchive(args);
+    if (command === 'import-repository') {
+      PageForgeRepositories.source(args.url);
+      if (!await api.permissions.contains({ origins: PageForgeRepositories.origins })) throw new Error('Для загрузки оформления нужен доступ к GitHub');
+      return importArchive({ ...args, archive: await PageForgeRepositories.download(args.url) });
+    }
     if (command === 'select') return select(args);
     if (command === 'delete') return remove(args);
     if (command === 'export') return exportArchive(args);

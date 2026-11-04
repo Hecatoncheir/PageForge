@@ -25,6 +25,12 @@ const base = `http://127.0.0.1:${server.address().port}`;
 const browser = await chromium.launch();
 const context = await browser.newContext({ reducedMotion: 'reduce' });
 const page = await context.newPage();
+const releasesUrl = 'https://api.github.com/repos/Hecatoncheir/PageForge/releases?per_page=100';
+await page.route(releasesUrl, (route) => route.fulfill({ json: [
+  { draft: true, published_at: '2099-01-01T00:00:00Z', assets: [] },
+  { draft: false, published_at: '2098-01-01T00:00:00Z', assets: [{ name: 'pageforge-chrome-9.8.8.zip' }] },
+  { draft: false, prerelease: true, published_at: '2026-11-04T00:00:00Z', tag_name: 'v9.8.7', assets: ['chrome', 'firefox'].map((browser) => ({ name: `pageforge-${browser}-9.8.7.zip`, browser_download_url: `https://github.com/Hecatoncheir/PageForge/releases/download/v9.8.7/pageforge-${browser}-9.8.7.zip` })) },
+] }));
 const errors = [];
 page.on('pageerror', (error) => errors.push(error.message));
 try {
@@ -35,12 +41,16 @@ try {
     assert.equal(await page.locator('a[href*="prototype"], a[href*="brand.html"]').count(), 0);
     assert.equal(await page.locator('iframe').count(), 0);
     await page.evaluate(() => document.fonts.ready);
+    await page.getByText('v9.8.7 · ПРЕВЬЮ', { exact: true }).waitFor();
+    for (const browser of ['Chrome', 'Firefox']) {
+      assert.equal(await page.getByRole('link', { name: `Скачать PageForge для ${browser}`, exact: true }).getAttribute('href'), `https://github.com/Hecatoncheir/PageForge/releases/download/v9.8.7/pageforge-${browser.toLowerCase()}-9.8.7.zip`);
+    }
     await page.getByRole('radio', { name: 'Полночь', exact: true }).click();
     assert.equal(await page.locator('.demo-browser').getAttribute('data-appearance'), 'night');
     await page.getByRole('tab', { name: 'Разработка', exact: true }).click();
     assert.equal(await page.locator('#demo-development').isVisible(), true);
     assert.equal(await page.getByRole('button', { name: 'Выгрузка ZIP доступна в установленном расширении', exact: true }).isEnabled(), false);
-    await page.screenshot({ path: path.join(output, `site-development-${viewport.width}.png`), fullPage: true });
+    await page.screenshot({ path: path.join(output, `site-development-${viewport.width}.png`), fullPage: true, animations: 'disabled' });
     await page.getByRole('tab', { name: 'Отображение', exact: true }).click();
     await page.getByRole('button', { name: 'Все', exact: true }).click();
     await page.getByText('Все оформления', { exact: true }).waitFor();
@@ -53,8 +63,11 @@ try {
     if (viewport.width >= 1300) {
       assert.ok(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight + 1), 'Главная страница не помещается по высоте');
     }
-    await page.screenshot({ path: path.join(output, `site-${viewport.width}.png`), fullPage: true });
+    await page.screenshot({ path: path.join(output, `site-${viewport.width}.png`), fullPage: true, animations: 'disabled' });
   }
+  await page.route(releasesUrl, (route) => route.abort());
+  await page.goto(`${base}/index.html?theme=dark`);
+  assert.match(await page.getByRole('link', { name: 'Скачать PageForge для Chrome', exact: true }).getAttribute('href'), /v0\.1\.0\/pageforge-chrome-0\.1\.0\.zip$/);
   await page.setViewportSize({ width: 1440, height: 900 });
   for (const theme of ['dark', 'light']) {
     await page.goto(`${base}/brand.html?theme=${theme}`);

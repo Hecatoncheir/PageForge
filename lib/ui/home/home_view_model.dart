@@ -95,6 +95,12 @@ class HomeViewModel extends ChangeNotifier {
   );
   Future<void> importArchive() =>
       _run(() => _repository.importArchive(context?.tabId ?? -1));
+  Future<void> importRepository(String url) => _run(
+    () => _repository.execute('import-repository', {
+      'url': url.trim(),
+      'tabId': context?.tabId,
+    }),
+  );
   Future<void> toggleTheme() => _run(
     () =>
         _repository.execute('theme', {'theme': lightTheme ? 'dark' : 'light'}),

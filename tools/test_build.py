@@ -33,7 +33,7 @@ class BuildTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="pageforge-build-") as temporary:
             root = Path(temporary)
             for name in (
-                "index.html", "main.dart.js", "flutter_bootstrap.js", "bridge.js",
+                "index.html", "main.dart.js", "flutter_bootstrap.js", "bridge.js", "repositories.js",
                 "canvaskit/canvaskit.js", "canvaskit/canvaskit.wasm",
                 "assets/design/assets/fonts/NunitoSans-Variable.ttf", "canvaskit/chromium/canvaskit.wasm",
                 "flutter_service_worker.js",

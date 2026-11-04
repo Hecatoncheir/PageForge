@@ -26,6 +26,11 @@
       const granted = await api.permissions.request({ origins: [args.originPattern] });
       if (!granted) throw new Error('Доступ к сайту не предоставлен');
     }
+    if (name === 'import-repository') {
+      PageForgeRepositories.source(args.url);
+      const granted = await api.permissions.request({ origins: PageForgeRepositories.origins });
+      if (!granted) throw new Error('Для загрузки оформления нужен доступ к GitHub');
+    }
     const response = await api.runtime.sendMessage({ type: 'pageforge:command', command: name, args: { ...(explicitTab ? { tabId: explicitTab } : {}), ...args } });
     if (response?.error) throw new Error(response.error);
     return response?.data ?? {};

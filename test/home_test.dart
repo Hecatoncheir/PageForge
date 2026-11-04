@@ -50,6 +50,50 @@ void main() {
   });
 
   for (final size in [const Size(380, 580), const Size(320, 480)]) {
+    testWidgets('Ссылка на репозиторий передаётся из поля в окно $size', (
+      tester,
+    ) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final calls = <Map<String, Object?>>[];
+      final repository = BrowserRepository(
+        loader: () async => const BrowserContext(
+          siteLabel: 'github.com',
+          version: '0.2.0',
+          tabId: 7,
+          supported: true,
+          isExtension: true,
+        ),
+        command: (name, args) async {
+          if (name == 'import-repository') {
+            calls.add(args);
+            return {'message': 'Оформление добавлено'};
+          }
+          return {};
+        },
+      );
+      await tester.pumpWidget(PageForgeApp(repository: repository));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Разработка'));
+      await tester.pumpAndSettle();
+      final field = find.byType(TextField);
+      await tester.ensureVisible(field);
+      await tester.enterText(field, ' https://github.com/owner/repo ');
+      await tester.pump();
+      await tester.tap(find.byTooltip('Добавить из репозитория'));
+      await tester.pumpAndSettle();
+      expect(calls, [
+        {'url': 'https://github.com/owner/repo', 'tabId': 7},
+      ]);
+      expect(find.text('Исходное отображение'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    });
+  }
+
+  for (final size in [const Size(380, 580), const Size(320, 480)]) {
     testWidgets('Карточки и действия помещаются в окно $size', (tester) async {
       tester.view.physicalSize = size;
       tester.view.devicePixelRatio = 1;

@@ -9,12 +9,12 @@ import { zipSync, unzipSync, strToU8, strFromU8 } from 'fflate';
 const work = path.resolve('work');
 await mkdir(work, { recursive: true });
 const extensionPath = await mkdtemp(path.join(work, 'browser-extension-'));
-await cp(path.resolve('dist/chrome'), extensionPath, { recursive: true });
+await cp(path.resolve(process.env.PAGEFORGE_EXTENSION_PATH ?? 'dist/chrome'), extensionPath, { recursive: true });
 const manifest = JSON.parse(await readFile(path.join(extensionPath, 'manifest.json'), 'utf8'));
 assert.equal(manifest.host_permissions, undefined);
 // Заранее выдан только доступ к тестовому сайту: эквивалент принятого запроса permissions.request.
 // Проверка системного окна выдачи разрешения остаётся ручной.
-manifest.host_permissions = ['http://127.0.0.1/*'];
+manifest.host_permissions = ['http://127.0.0.1/*', 'https://api.github.com/*', 'https://codeload.github.com/*'];
 await writeFile(path.join(extensionPath, 'manifest.json'), JSON.stringify(manifest));
 
 const server = createServer((request, response) => {
@@ -195,6 +195,38 @@ try {
   await popup.getByRole('button', { name: 'Применить Перетаскивание', exact: true }).waitFor();
   await popup.getByRole('button', { name: 'Удалить Перетаскивание', exact: true }).click();
 
+  const repositoryZip = zipSync({
+    'repo-sha/profile.json': strToU8(JSON.stringify({ schemaVersion: 1, id: 'repository', name: 'Из репозитория', version: '1.0.0', mode: 'css', matches: ['http://127.0.0.1/*'] })),
+    'repo-sha/styles.css': strToU8('body { background: #32302f !important; }'),
+  });
+  await worker.evaluate((data) => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (url, options) => {
+      if (url !== 'https://api.github.com/repos/fixture/theme/zipball/HEAD') return originalFetch(url, options);
+      const response = new Response(new Uint8Array(data));
+      Object.defineProperty(response, 'url', { value: 'https://codeload.github.com/fixture/theme/legacy.zip/HEAD' });
+      return response;
+    };
+  }, [...repositoryZip]);
+  await popup.getByRole('button', { name: 'Разработка', exact: true }).click();
+  const deniedImport = await popup.evaluate(async () => {
+    const request = chrome.permissions.request;
+    chrome.permissions.request = async () => false;
+    try { return JSON.parse(await pageForge.command('import-repository', JSON.stringify({ url: 'https://github.com/fixture/theme' }))); }
+    finally { chrome.permissions.request = request; }
+  });
+  assert.match(deniedImport.error, /нужен доступ к GitHub/);
+  await popup.getByRole('textbox').fill('https://github.com/fixture/theme');
+  await popup.screenshot({ path: path.join(diagnostics, 'extension-repository.png'), animations: 'disabled' });
+  await popup.getByRole('button', { name: 'Добавить из репозитория', exact: true }).click();
+  await popup.getByRole('button', { name: 'Применить Из репозитория', exact: true }).waitFor();
+  await popup.getByRole('button', { name: 'Применить Из репозитория', exact: true }).click();
+  await site.waitForFunction(() => getComputedStyle(document.body).backgroundColor === 'rgb(50, 48, 47)');
+  await popup.getByRole('button', { name: 'Удалить Из репозитория', exact: true }).click();
+  await site.waitForFunction(() => getComputedStyle(document.body).backgroundColor === 'rgb(255, 255, 255)');
+  const registrations = await worker.evaluate(() => chrome.scripting.getRegisteredContentScripts());
+  assert.ok(registrations.every((entry) => entry.matches.every((pattern) => !/api\.github|codeload\.github/.test(pattern))));
+
   const foreign = theme('foreign', 'Другой сайт', 'css', 'body{color:red}', {
     'profile.json': strToU8(JSON.stringify({ schemaVersion: 1, id: 'foreign', name: 'Другой сайт', version: '1.0.0', mode: 'css', matches: ['https://other.example/*'] })),
   });
@@ -230,6 +262,15 @@ try {
   await openPopup(restoredTabId);
   await popup.getByRole('button', { name: 'Удалить Бумага', exact: true }).click();
   await restoredSite.waitForFunction(() => getComputedStyle(document.body).backgroundColor === 'rgb(255, 255, 255)');
+  if (process.env.PAGEFORGE_TEST_REPOSITORY) {
+    const imported = await command('import-repository', { tabId: restoredTabId, url: process.env.PAGEFORGE_TEST_REPOSITORY });
+    assert.equal(imported.error, undefined);
+    const profile = await worker.evaluate((id) => PageForgeStore.get(id), imported.id);
+    assert.equal(profile.id, 'github-gruvbox-studio');
+    assert.ok(profile.css.includes('#1d2021'));
+    assert.ok(profile.files['assets/fonts/NunitoSans-Variable.ttf']);
+    console.log('Оформление загружено из настоящего открытого репозитория GitHub.');
+  }
   console.log('Проверены Flutter, CSS, своя разметка, откат после ошибки, ZIP, снимок основы, сохранение после перезапуска и отсутствие внешних запросов интерфейса.');
 } catch (error) {
   if (popup && !popup.isClosed()) {

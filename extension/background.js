@@ -1,5 +1,5 @@
 (() => {
-  if (typeof importScripts === 'function') importScripts('vendor/fflate.js', 'profiles.js', 'store.js', 'downloads.js', 'runtime.js');
+  if (typeof importScripts === 'function') importScripts('vendor/fflate.js', 'profiles.js', 'repositories.js', 'store.js', 'downloads.js', 'runtime.js');
   const api = globalThis.browser ?? globalThis.chrome;
   api.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (sender.id !== api.runtime.id) return false;

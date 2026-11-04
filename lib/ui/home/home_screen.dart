@@ -640,9 +640,31 @@ class _CardAction extends StatelessWidget {
   );
 }
 
-class _DevelopmentPanel extends StatelessWidget {
+class _DevelopmentPanel extends StatefulWidget {
   const _DevelopmentPanel({super.key, required this.model});
   final HomeViewModel model;
+
+  @override
+  State<_DevelopmentPanel> createState() => _DevelopmentPanelState();
+}
+
+class _DevelopmentPanelState extends State<_DevelopmentPanel> {
+  final _repositoryUrl = TextEditingController();
+  HomeViewModel get model => widget.model;
+  bool get _canImport =>
+      model.context?.isExtension == true &&
+      !model.busy &&
+      _repositoryUrl.text.trim().isNotEmpty;
+
+  void _importRepository() {
+    if (_canImport) model.importRepository(_repositoryUrl.text);
+  }
+
+  @override
+  void dispose() {
+    _repositoryUrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -670,7 +692,7 @@ class _DevelopmentPanel extends StatelessWidget {
                     duration: MediaQuery.disableAnimationsOf(context)
                         ? Duration.zero
                         : const Duration(milliseconds: 180),
-                    height: (constraints.maxHeight - 132).clamp(200, 400),
+                    height: (constraints.maxHeight - 194).clamp(160, 350),
                     decoration: BoxDecoration(
                       border: Border.all(
                         color: model.dragging ? colors.primary : colors.outline,
@@ -684,7 +706,7 @@ class _DevelopmentPanel extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(15),
+                          padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: colors.primary.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(17),
@@ -695,7 +717,7 @@ class _DevelopmentPanel extends StatelessWidget {
                             size: 27,
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         const Text(
                           'Добавить',
                           style: TextStyle(
@@ -711,7 +733,7 @@ class _DevelopmentPanel extends StatelessWidget {
                             color: colors.onSurfaceVariant,
                           ),
                         ),
-                        const SizedBox(height: 17),
+                        const SizedBox(height: 12),
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 6,
@@ -734,6 +756,47 @@ class _DevelopmentPanel extends StatelessWidget {
                     ),
                   ),
                 ),
+              ),
+            ),
+            const SizedBox(height: 14),
+            SizedBox(
+              height: 48,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _repositoryUrl,
+                      enabled:
+                          model.context?.isExtension == true && !model.busy,
+                      onChanged: (_) => setState(() {}),
+                      onSubmitted: (_) => _importRepository(),
+                      keyboardType: TextInputType.url,
+                      textInputAction: TextInputAction.go,
+                      autocorrect: false,
+                      style: const TextStyle(fontSize: 11),
+                      decoration: InputDecoration(
+                        labelText: 'Репозиторий GitHub',
+                        hintText: 'https://github.com/owner/repo',
+                        labelStyle: const TextStyle(fontSize: 11),
+                        hintStyle: const TextStyle(fontSize: 10),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  IconButton(
+                    tooltip: 'Добавить из репозитория',
+                    onPressed: _canImport ? _importRepository : null,
+                    color: colors.primary,
+                    icon: const Icon(Icons.download_outlined, size: 22),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 14),

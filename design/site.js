@@ -1,4 +1,25 @@
 (() => {
+  async function updateDownloads() {
+    try {
+      const response = await fetch('https://api.github.com/repos/Hecatoncheir/PageForge/releases?per_page=100', { credentials: 'omit', signal: AbortSignal.timeout(8000) });
+      if (!response.ok) return;
+      const releases = await response.json();
+      if (!Array.isArray(releases)) return;
+      const published = releases.filter((release) => !release.draft && release.published_at && Array.isArray(release.assets))
+        .sort((a, b) => Date.parse(b.published_at) - Date.parse(a.published_at));
+      const latest = published.find((release) => ['chrome', 'firefox'].every((browser) => release.assets.some((asset) => new RegExp(`^pageforge-${browser}-\\d+\\.\\d+\\.\\d+\\.zip$`).test(asset.name))));
+      if (!latest) return;
+      for (const link of document.querySelectorAll('[data-browser-download]')) {
+        const browser = link.dataset.browserDownload;
+        const asset = latest.assets.find((item) => new RegExp(`^pageforge-${browser}-\\d+\\.\\d+\\.\\d+\\.zip$`).test(item.name));
+        const url = new URL(asset.browser_download_url);
+        if (url.origin !== 'https://github.com' || !url.pathname.startsWith('/Hecatoncheir/PageForge/releases/download/')) continue;
+        link.href = url.href;
+      }
+      document.querySelector('[data-release-version]').textContent = `${latest.tag_name}${latest.prerelease ? ' · ПРЕВЬЮ' : ''}`;
+    } catch { /* При недоступности GitHub остаются ссылки на известный выпуск. */ }
+  }
+  void updateDownloads();
   const examples = [
     { id: 'paper', name: 'Бумага', bg: '#fbf1c7', ink: '#282828', accent: '#d65d0e' },
     { id: 'night', name: 'Полночь', bg: '#1d2021', ink: '#ebdbb2', accent: '#fabd2f' },
