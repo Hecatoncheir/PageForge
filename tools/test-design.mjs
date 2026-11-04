@@ -70,7 +70,7 @@ try {
   }
   await page.route(releasesUrl, (route) => route.abort());
   await page.goto(`${base}/index.html?theme=dark`);
-  assert.match(await page.getByRole('link', { name: 'Скачать PageForge для Chrome', exact: true }).getAttribute('href'), /v0\.1\.0\/pageforge-chrome-0\.1\.0\.zip$/);
+  assert.match(await page.getByRole('link', { name: 'Скачать PageForge для Chrome', exact: true }).getAttribute('href'), /v0\.2\.0\/pageforge-chrome-0\.2\.0\.zip$/);
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.getByRole('button', { name: 'Все', exact: true }).click();
   await page.screenshot({ path: path.join(output, 'site-library.png'), fullPage: true, animations: 'disabled' });
