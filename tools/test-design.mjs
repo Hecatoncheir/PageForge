@@ -6,6 +6,7 @@ import { chromium } from 'playwright';
 import { zipSync, strToU8 } from 'fflate';
 
 const root = path.resolve('design');
+const { version } = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
 const output = path.resolve('work/design-checks');
 await mkdir(output, { recursive: true });
 const types = { '.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.ttf': 'font/ttf', '.png': 'image/png' };
@@ -70,7 +71,9 @@ try {
   }
   await page.route(releasesUrl, (route) => route.abort());
   await page.goto(`${base}/index.html?theme=dark`);
-  assert.match(await page.getByRole('link', { name: 'Скачать PageForge для Chrome', exact: true }).getAttribute('href'), /v0\.2\.0\/pageforge-chrome-0\.2\.0\.zip$/);
+  for (const browser of ['chrome', 'firefox']) {
+    assert.equal(await page.locator(`[data-browser-download="${browser}"]`).getAttribute('href'), `https://github.com/Hecatoncheir/PageForge/releases/download/v${version}/pageforge-${browser}-${version}.zip`);
+  }
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.getByRole('button', { name: 'Все', exact: true }).click();
   await page.screenshot({ path: path.join(output, 'site-library.png'), fullPage: true, animations: 'disabled' });

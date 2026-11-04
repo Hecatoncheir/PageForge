@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "PageForge",
   "description": "Собственные стили и разметка сайтов. Импорт и выгрузка оформлений в ZIP.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "permissions": ["activeTab", "storage", "scripting", "downloads"],
   "optional_host_permissions": ["http://*/*", "https://*/*"],
   "action": {
