@@ -74,10 +74,12 @@
   document.addEventListener('drop', (event) => {
     event.preventDefault();
     const accepted = overDropArea(event);
+    // FileList доступен только во время drop. Сам File сохраняем до первого await.
+    const file = event.dataTransfer?.files[0];
     setDragging(false);
     if (!accepted) return;
     emit({ event: 'start' });
-    void command('state').then((state) => importFile(event.dataTransfer.files[0], state.tabId)).then(
+    void command('state').then((state) => importFile(file, state.tabId)).then(
       (data) => emit({ event: 'done', ...data }),
       (error) => emit({ event: 'done', error: error.message }),
     );

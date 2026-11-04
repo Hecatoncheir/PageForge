@@ -187,6 +187,10 @@ try {
     const transfer = new DataTransfer();
     transfer.items.add(new File([new Uint8Array(data)], 'drop.zip', { type: 'application/zip' }));
     document.dispatchEvent(new DragEvent('drop', { bubbles: true, dataTransfer: transfer, clientX: bounds.x + bounds.width / 2, clientY: bounds.y + bounds.height / 2 }));
+    // После завершения настоящего drop браузер закрывает доступ к FileList.
+    // Искусственный DataTransfer сам этого не делает — очищаем его явно.
+    transfer.items.clear();
+    if (transfer.files.length !== 0) throw new Error('FileList не очищен после drop');
   }, [...dropped]);
   await popup.getByRole('button', { name: 'Применить Перетаскивание', exact: true }).waitFor();
   await popup.getByRole('button', { name: 'Удалить Перетаскивание', exact: true }).click();
