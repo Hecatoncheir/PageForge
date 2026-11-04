@@ -57,6 +57,7 @@ function theme(id, name, mode = 'css', css = 'body { background: #fbf1c7 !import
 async function openPopup(tabId) {
   popup = await context.newPage();
   popup.on('pageerror', (error) => errors.push(error.message));
+  popup.on('response', (response) => { if (response.status() >= 400) errors.push(`Ресурс ${response.url()}: ${response.status()}`); });
   popup.on('request', (request) => { if (/^https?:/.test(request.url())) remoteRequests.push(request.url()); });
   await popup.setViewportSize({ width: 380, height: 580 });
   await popup.goto(`${origin}/index.html?tab=${tabId}`);

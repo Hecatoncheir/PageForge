@@ -358,6 +358,8 @@ class _AppearanceCard extends StatelessWidget {
         children: [
           Semantics(
             button: true,
+            container: true,
+            focusable: true,
             selected: selected,
             label: 'Применить ${appearance.name}',
             onTap: model.busy ? null : () => model.select(appearance.id),
