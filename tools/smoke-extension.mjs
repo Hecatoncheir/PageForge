@@ -91,13 +91,13 @@ async function upload(archive) {
   await (await chooser).setFiles({ name: 'appearance.zip', mimeType: 'application/zip', buffer: Buffer.from(archive) });
 }
 
-async function exportedFiles(tabId, id) {
+async function exportedFiles(tabId, id, filename = '127.0.0.1.zip') {
   const result = await command('export', { tabId, id });
   assert.equal(result.error, undefined);
-  assert.equal(result.message, 'Архив передан браузеру: 127.0.0.1.zip');
+  assert.equal(result.message, `Архив передан браузеру: ${filename}`);
   const [download] = await worker.evaluate((downloadId) => chrome.downloads.search({ id: downloadId }), result.downloadId);
-  assert.equal(await worker.evaluate(() => globalThis.__pageForgeDownloadNames.at(-1)), '127.0.0.1.zip');
-  assert.ok(download.url.startsWith('data:application/zip;pageforge-name=127.0.0.1.zip;base64,'));
+  assert.equal(await worker.evaluate(() => globalThis.__pageForgeDownloadNames.at(-1)), filename);
+  assert.ok(download.url.startsWith(`data:application/zip;pageforge-name=${filename};base64,`));
   return unzipSync(Buffer.from(download.url.split(',')[1], 'base64'));
 }
 
@@ -194,6 +194,22 @@ try {
   }, [...dropped]);
   await popup.getByRole('button', { name: 'Применить Перетаскивание', exact: true }).waitFor();
   await popup.getByRole('button', { name: 'Удалить Перетаскивание', exact: true }).click();
+
+  const foreign = theme('foreign', 'Другой сайт', 'css', 'body{color:red}', {
+    'profile.json': strToU8(JSON.stringify({ schemaVersion: 1, id: 'foreign', name: 'Другой сайт', version: '1.0.0', mode: 'css', matches: ['https://other.example/*'] })),
+  });
+  assert.equal((await command('import', { tabId, archive: Buffer.from(foreign).toString('base64') })).error, undefined);
+  const listing = await command('state', { tabId });
+  assert.equal(listing.profiles.some((item) => item.id === 'foreign'), false);
+  assert.equal(listing.library.find((item) => item.id === 'foreign').compatible, false);
+  await popup.getByRole('button', { name: 'Все', exact: true }).click();
+  await popup.getByText('Все оформления', { exact: true }).waitFor();
+  await popup.getByText('Другой сайт', { exact: true }).waitFor();
+  const foreignFiles = await exportedFiles(tabId, 'foreign', 'other.example.zip');
+  assert.equal(JSON.parse(strFromU8(foreignFiles['profile.json'])).id, 'foreign');
+  await popup.getByRole('button', { name: 'Удалить Другой сайт', exact: true }).click();
+  await popup.getByText('Другой сайт', { exact: true }).waitFor({ state: 'hidden' });
+  await popup.getByRole('button', { name: 'К текущему сайту', exact: true }).click();
 
   await popup.bringToFront();
   await popup.getByRole('button', { name: 'Отображение', exact: true }).click();

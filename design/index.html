@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="PageForge — расширение для Chrome и Firefox. Выбирайте собственное оформление привычных сайтов.">
-  <title>PageForge — интернет на свой лад</title>
+  <title>PageForge — те же сайты, другой взгляд</title>
   <link rel="icon" href="assets/app-icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="tokens.css">
   <link rel="stylesheet" href="site.css">
@@ -29,7 +29,7 @@
           <a class="button" href="https://github.com/Hecatoncheir/PageForge/releases">Релизы на GitHub <span data-icon="download"></span></a>
           <a class="source-link" href="https://github.com/Hecatoncheir/PageForge">Исходный код <span data-icon="code"></span></a>
         </div>
-        <div class="compatibility"><span class="browser-symbol chrome-symbol"></span>Chrome <span class="browser-symbol firefox-symbol"></span>Firefox <span class="version mono">В РАЗРАБОТКЕ</span></div>
+        <div class="compatibility"><span class="browser-symbol chrome-symbol"></span>Chrome <span class="browser-symbol firefox-symbol"></span>Firefox <span class="version mono">v0.1.0 · ПРЕВЬЮ</span></div>
       </section>
 
       <section class="hero-stage" aria-label="Демонстрация оформления сайта">
@@ -46,13 +46,26 @@
             <div class="original-noise">НОВОСТИ · ПОДПИСКА · РЕКОМЕНДАЦИИ · ЕЩЁ</div>
           </div>
         </div>
-        <div class="popup-preview" role="img" aria-label="Пример интерфейса установленного расширения PageForge">
-          <div class="static-app" aria-hidden="true">
-            <div class="static-segmented"><span>Отображение</span><span>Разработка</span></div>
+        <div class="popup-preview" role="region" aria-label="Интерактивный пример PageForge">
+          <div class="static-app">
+            <div class="static-segmented" role="tablist" aria-label="Вкладки примера" data-active="appearance">
+              <button type="button" id="demo-tab-appearance" role="tab" aria-selected="true" aria-controls="demo-appearance" data-demo-tab="appearance">Отображение</button>
+              <button type="button" id="demo-tab-development" role="tab" aria-selected="false" aria-controls="demo-development" tabindex="-1" data-demo-tab="development">Разработка</button>
+            </div>
             <div class="static-header"><span class="wordmark"><svg><use href="assets/marks.svg#forge"></use></svg>PageForge</span><span class="mono">journal.example</span></div>
-            <div class="static-original"><span data-icon="reset"></span>Исходное отображение<span>○</span></div>
-            <div class="static-grid"></div>
-            <div class="static-footer"><i></i>Только для этого сайта<span class="mono">ZIP ↔</span></div>
+            <div class="static-panel" id="demo-appearance" role="tabpanel" aria-labelledby="demo-tab-appearance">
+              <button type="button" class="static-original" data-demo-original aria-label="Исходное отображение"><span data-icon="reset"></span>Исходное отображение<span aria-hidden="true">○</span></button>
+              <div class="static-grid" role="radiogroup" aria-label="Оформления примера"></div>
+            </div>
+            <div class="static-panel static-development" id="demo-development" role="tabpanel" aria-labelledby="demo-tab-development" hidden>
+              <button type="button" class="static-zone static-import" disabled aria-label="Добавление ZIP доступно в установленном расширении"><span data-icon="upload"></span><b>Добавить</b><small>Перетащите ZIP или выберите файл</small><span class="mono static-zip">.ZIP</span></button>
+              <button type="button" class="static-zone static-export" disabled aria-label="Выгрузка ZIP доступна в установленном расширении"><span data-icon="package"></span><span><b>Выгрузить</b><small data-demo-export>Бумага</small></span><span>→</span></button>
+            </div>
+            <div class="static-panel static-library" aria-label="Все оформления примера" hidden>
+              <div class="static-library-heading"><button type="button" data-demo-back aria-label="К текущему сайту">←</button><b>Все оформления</b><span class="mono">5</span></div>
+              <div class="static-library-list"></div>
+            </div>
+            <div class="static-footer"><i></i><span data-demo-scope>Только для этого сайта</span><button type="button" class="static-all" data-demo-all aria-pressed="false">Все</button></div>
           </div>
         </div>
         <div class="stage-note"><span class="sketch-arrow">↳</span> Ваше оформление. В вашем браузере.</div>

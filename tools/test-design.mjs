@@ -35,6 +35,20 @@ try {
     assert.equal(await page.locator('a[href*="prototype"], a[href*="brand.html"]').count(), 0);
     assert.equal(await page.locator('iframe').count(), 0);
     await page.evaluate(() => document.fonts.ready);
+    await page.getByRole('radio', { name: 'Полночь', exact: true }).click();
+    assert.equal(await page.locator('.demo-browser').getAttribute('data-appearance'), 'night');
+    await page.getByRole('tab', { name: 'Разработка', exact: true }).click();
+    assert.equal(await page.locator('#demo-development').isVisible(), true);
+    assert.equal(await page.getByRole('button', { name: 'Выгрузка ZIP доступна в установленном расширении', exact: true }).isEnabled(), false);
+    await page.screenshot({ path: path.join(output, `site-development-${viewport.width}.png`), fullPage: true });
+    await page.getByRole('tab', { name: 'Отображение', exact: true }).click();
+    await page.getByRole('button', { name: 'Все', exact: true }).click();
+    await page.getByText('Все оформления', { exact: true }).waitFor();
+    assert.equal(await page.getByText('docs.example', { exact: true }).isVisible(), true);
+    await page.getByRole('button', { name: 'К текущему сайту', exact: true }).click();
+    await page.getByRole('button', { name: 'Исходное отображение', exact: true }).click();
+    assert.equal(await page.locator('.demo-browser').getAttribute('data-appearance'), 'original');
+    await page.getByRole('radio', { name: 'Бумага', exact: true }).click();
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Горизонтальная прокрутка');
     if (viewport.width >= 1300) {
       assert.ok(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight + 1), 'Главная страница не помещается по высоте');

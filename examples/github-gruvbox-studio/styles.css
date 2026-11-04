@@ -1,0 +1,419 @@
+/* GitHub · Gruvbox Studio. Тёмная рабочая область на основе исходной страницы. */
+@font-face {
+  font-family: "PageForge Nunito Sans";
+  src: url("assets/fonts/NunitoSans-Variable.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 200 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "PageForge Nunito";
+  src: url("assets/fonts/Nunito-Variable.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 200 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "PageForge Mono";
+  src: url("assets/fonts/JetBrainsMono-Variable.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+}
+
+:root,
+[data-color-mode],
+[data-theme] {
+  color-scheme: dark !important;
+  --pf-canvas: #1d2021;
+  --pf-panel: #282828;
+  --pf-raised: #32302f;
+  --pf-hover: #3c3836;
+  --pf-line: #504945;
+  --pf-text: #fbf1c7;
+  --pf-muted: #bdae93;
+  --pf-accent: #fe8019;
+  --pf-green: #b8bb26;
+  --bgColor-default: #282828 !important;
+  --bgColor-muted: #32302f !important;
+  --bgColor-inset: #1d2021 !important;
+  --bgColor-emphasis: #ebdbb2 !important;
+  --bgColor-inverse: #ebdbb2 !important;
+  --bgColor-white: #282828 !important;
+  --bgColor-black: #1d2021 !important;
+  --bgColor-neutral-muted: #50494555 !important;
+  --bgColor-neutral-emphasis: #a89984 !important;
+  --bgColor-accent-muted: #fe80191f !important;
+  --bgColor-accent-emphasis: #fe8019 !important;
+  --bgColor-success-muted: #b8bb261a !important;
+  --bgColor-success-emphasis: #b8bb26 !important;
+  --bgColor-open-muted: #b8bb261a !important;
+  --bgColor-open-emphasis: #b8bb26 !important;
+  --bgColor-danger-muted: #fb49341a !important;
+  --bgColor-danger-emphasis: #fb4934 !important;
+  --bgColor-attention-muted: #fabd2f1a !important;
+  --bgColor-attention-emphasis: #fabd2f !important;
+  --bgColor-done-muted: #d3869b1a !important;
+  --bgColor-done-emphasis: #d3869b !important;
+  --fgColor-default: #fbf1c7 !important;
+  --fgColor-muted: #bdae93 !important;
+  --fgColor-disabled: #928374 !important;
+  --fgColor-neutral: #bdae93 !important;
+  --fgColor-onEmphasis: #1d2021 !important;
+  --fgColor-accent: #fabd2f !important;
+  --fgColor-success: #b8bb26 !important;
+  --fgColor-open: #b8bb26 !important;
+  --fgColor-danger: #fb4934 !important;
+  --fgColor-closed: #fb4934 !important;
+  --fgColor-attention: #fabd2f !important;
+  --fgColor-done: #d3869b !important;
+  --borderColor-default: #504945 !important;
+  --borderColor-muted: #3c3836 !important;
+  --borderColor-emphasis: #7c6f64 !important;
+  --borderColor-neutral-emphasis: #665c54 !important;
+  --borderColor-accent-emphasis: #fe8019 !important;
+  --borderColor-accent-muted: #fe801966 !important;
+  --borderColor-success-muted: #79740e80 !important;
+  --borderColor-danger-muted: #cc241d80 !important;
+  --focus-outlineColor: #fabd2f !important;
+  --control-bgColor-rest: #32302f !important;
+  --control-bgColor-hover: #3c3836 !important;
+  --control-bgColor-active: #504945 !important;
+  --control-borderColor-rest: #504945 !important;
+  --button-default-bgColor-rest: #32302f !important;
+  --button-default-bgColor-hover: #3c3836 !important;
+  --button-default-bgColor-active: #504945 !important;
+  --button-default-fgColor-rest: #ebdbb2 !important;
+  --button-default-borderColor-rest: #504945 !important;
+  --button-primary-bgColor-rest: #b8bb26 !important;
+  --button-primary-bgColor-hover: #98971a !important;
+  --button-primary-bgColor-active: #b8bb26 !important;
+  --button-primary-fgColor-rest: #1d2021 !important;
+  --button-primary-borderColor-rest: #b8bb26 !important;
+  --button-invisible-fgColor-rest: #bdae93 !important;
+  --button-invisible-bgColor-hover: #50494566 !important;
+  --underlineNav-borderColor-active: #fe8019 !important;
+  --overlay-bgColor: #282828 !important;
+  --overlay-backdrop-bgColor: #1d2021b3 !important;
+  --borderRadius-small: 8px !important;
+  --borderRadius-medium: 14px !important;
+  --borderRadius-large: 24px !important;
+  --borderRadius-xlarge: 28px !important;
+  --fontStack-sansSerif: "PageForge Nunito Sans", system-ui, sans-serif !important;
+  --fontStack-monospace: "PageForge Mono", ui-monospace, monospace !important;
+  --color-canvas-default: #282828 !important;
+  --color-canvas-subtle: #32302f !important;
+  --color-canvas-inset: #1d2021 !important;
+  --color-fg-default: #fbf1c7 !important;
+  --color-fg-muted: #bdae93 !important;
+  --color-fg-subtle: #928374 !important;
+  --color-fg-on-emphasis: #1d2021 !important;
+  --color-accent-fg: #fabd2f !important;
+  --color-accent-subtle: #fe80191f !important;
+  --color-border-default: #504945 !important;
+  --color-border-muted: #3c3836 !important;
+  --color-header-bg: #282828 !important;
+  --color-header-text: #bdae93 !important;
+  --color-header-logo: #fbf1c7 !important;
+  --color-header-search-bg: #32302f !important;
+  --color-header-search-border: #504945 !important;
+  --color-btn-bg: #32302f !important;
+  --color-btn-text: #ebdbb2 !important;
+  --color-btn-border: #504945 !important;
+  --color-btn-primary-bg: #b8bb26 !important;
+  --color-btn-primary-text: #1d2021 !important;
+  --color-btn-primary-border: #b8bb26 !important;
+  --color-btn-primary-hover-bg: #98971a !important;
+  --color-prettylights-syntax-comment: #928374 !important;
+  --color-prettylights-syntax-constant: #d3869b !important;
+  --color-prettylights-syntax-entity: #fabd2f !important;
+  --color-prettylights-syntax-entity-tag: #b8bb26 !important;
+  --color-prettylights-syntax-keyword: #fb4934 !important;
+  --color-prettylights-syntax-string: #8ec07c !important;
+  --color-prettylights-syntax-variable: #83a598 !important;
+  --color-prettylights-syntax-markup-heading: #fe8019 !important;
+}
+
+html {
+  background: #1d2021 !important;
+  scrollbar-color: #665c54 #1d2021 !important;
+  scrollbar-width: thin;
+}
+body {
+  background: radial-gradient(ellipse at 90% 0, #b8bb260b, transparent 42%), #1d2021 !important;
+  color: #fbf1c7 !important;
+  font: 15px/1.6 "PageForge Nunito Sans", system-ui, sans-serif !important;
+}
+:where(button, input, select, textarea) {
+  font-family: "PageForge Nunito Sans", system-ui, sans-serif !important;
+}
+:where(h1, h2, h3, h4) {
+  font-family: "PageForge Nunito", "PageForge Nunito Sans", system-ui, sans-serif !important;
+  letter-spacing: -0.025em !important;
+}
+:where(code, pre, kbd, samp, .blob-code, .react-code-text, .text-mono) {
+  font-family: "PageForge Mono", ui-monospace, monospace !important;
+}
+
+/* Карточки и управление на страницах репозиториев и в ленте. */
+:where(.Box, .flash, .markdown-alert, [role="dialog"], [role="menu"]) {
+  background-color: #282828 !important;
+  border: 1px solid #504945 !important;
+  border-radius: 24px !important;
+  box-shadow: 0 10px 30px #00000020 !important;
+}
+:where(.Box-header, .Box-footer) {
+  padding: 18px 22px !important;
+  background: #32302f !important;
+  border-color: #504945 !important;
+}
+.Box-header { border-radius: 23px 23px 0 0 !important; }
+.Box-footer { border-radius: 0 0 23px 23px !important; }
+.Box-row {
+  padding: 15px 22px !important;
+  border-color: #3c3836 !important;
+}
+.Box-row:hover { background: #32302f !important; }
+.Box > .Box-row:last-child { border-radius: 0 0 23px 23px !important; }
+:where(.Box-body, .markdown-body) { line-height: 1.75 !important; }
+:where(.btn, .Button, [class*="prc-Button-ButtonBase"]) {
+  border-radius: 999px !important;
+  box-shadow: none !important;
+}
+:where(.btn-primary, .Button--primary) {
+  background: #b8bb26 !important;
+  color: #1d2021 !important;
+  border-color: #b8bb26 !important;
+  font-weight: 800 !important;
+}
+:where(.btn-primary, .Button--primary):hover {
+  background: #98971a !important;
+  border-color: #98971a !important;
+}
+:where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]), textarea, select) {
+  background-color: #32302f !important;
+  color: #fbf1c7 !important;
+  border-color: #504945 !important;
+  border-radius: 12px !important;
+  caret-color: #fe8019 !important;
+}
+:where(input, textarea)::placeholder { color: #928374 !important; }
+:where(.markdown-body pre, .highlight) {
+  background: #1d2021 !important;
+  border: 1px solid #504945 !important;
+  border-radius: 18px !important;
+  padding: 22px !important;
+  line-height: 1.75 !important;
+}
+:where(.Label, .Counter) {
+  background-color: #3c3836 !important;
+  color: #ebdbb2 !important;
+  border-color: #504945 !important;
+  border-radius: 999px !important;
+}
+.markdown-body a { color: #fabd2f !important; }
+:focus-visible { outline-color: #fabd2f !important; outline-offset: 3px; }
+::selection { background: #fabd2f !important; color: #1d2021 !important; }
+
+/* Вкладки собраны в отдельную округлённую полосу. */
+:where(.UnderlineNav) {
+  background-color: #282828 !important;
+  border: 1px solid #504945 !important;
+  border-radius: 22px !important;
+  padding-inline: 10px !important;
+}
+:where(.UnderlineNav-item) {
+  padding: 13px 18px !important;
+  border-radius: 13px !important;
+}
+.UnderlineNav-item[aria-current="page"] { background-color: #3c3836 !important; }
+.Layout { --Layout-gutter: 28px !important; }
+
+/* Главная GitHub: плавающая верхняя панель, постоянная боковая панель и лента. */
+body:has(.feed-left-sidebar) .application-main,
+body:has(.feed-left-sidebar) .application-main > .color-bg-default,
+.feed-background,
+.feed-content {
+  background: transparent !important;
+}
+body:has(.feed-left-sidebar) .header-wrapper {
+  background: #282828 !important;
+  border: 1px solid #504945 !important;
+  border-radius: 28px !important;
+  box-shadow: 0 8px 32px #00000020 !important;
+}
+body:has(.feed-left-sidebar) .header-wrapper :is(.AppHeader, .Header) {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+.feed-left-sidebar {
+  background: #282828 !important;
+  border: 1px solid #504945 !important;
+  border-radius: 28px !important;
+  box-shadow: 0 12px 40px #00000024 !important;
+}
+.feed-left-sidebar :is(h2, h3) {
+  color: #bdae93 !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.09em !important;
+}
+.feed-left-sidebar :is(ul, nav) { padding-block: 8px !important; }
+.feed-left-sidebar li { margin-block: 5px !important; }
+.feed-left-sidebar a[data-hovercard-type="repository"] {
+  display: inline-flex !important;
+  align-items: center;
+  min-height: 34px;
+  padding: 6px 10px !important;
+  border-radius: 10px !important;
+  color: #ebdbb2 !important;
+}
+.feed-left-sidebar a[data-hovercard-type="repository"]:hover { background: #3c3836 !important; }
+.feed-left-sidebar a[aria-current="page"] {
+  background: #b8bb26 !important;
+  color: #1d2021 !important;
+  border-radius: 12px !important;
+}
+
+/* Показываем настоящий заголовок GitHub вместо скрытого заголовка для диктора. */
+#dashboard > h1.sr-only {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  margin: 0 0 26px !important;
+  padding: 0 !important;
+  clip: auto !important;
+  clip-path: none !important;
+  overflow: visible !important;
+  white-space: normal !important;
+  color: #fbf1c7 !important;
+  font: 800 clamp(30px, 3vw, 44px)/1.15 "PageForge Nunito", system-ui, sans-serif !important;
+  letter-spacing: -0.04em !important;
+}
+#dashboard > .Stack {
+  gap: 18px !important;
+  margin-bottom: 24px !important;
+}
+#dashboard .news { background: transparent !important; }
+#dashboard .news > :is(article, section, div),
+#dashboard > .Stack > :is(article, section, div) {
+  background: #282828 !important;
+  border: 1px solid #504945 !important;
+  border-radius: 26px !important;
+  padding: 24px !important;
+  margin-bottom: 20px !important;
+  box-shadow: 0 12px 32px #00000020 !important;
+}
+.feed-right-column > :is(div, section, article) {
+  background: #282828 !important;
+  border: 1px solid #504945 !important;
+  border-radius: 24px !important;
+  padding: 22px !important;
+  margin-bottom: 20px !important;
+}
+.feed-right-column :is(h2, h3) {
+  color: #fbf1c7 !important;
+  font-family: "PageForge Nunito", system-ui, sans-serif !important;
+  font-weight: 800 !important;
+}
+
+@media (min-width: 1280px) {
+  body:has(.feed-left-sidebar) {
+    --pf-sidebar: 264px;
+    --pf-gap: 24px;
+    box-sizing: border-box !important;
+    padding: 16px !important;
+  }
+  body:has(.feed-left-sidebar) .header-wrapper {
+    position: sticky !important;
+    top: 16px !important;
+    z-index: 30 !important;
+    margin: 0 0 0 calc(var(--pf-sidebar) + var(--pf-gap)) !important;
+    width: auto !important;
+    min-height: 68px !important;
+    padding: 3px 8px !important;
+  }
+  .feed-left-sidebar {
+    position: fixed !important;
+    inset: 16px auto 16px 16px !important;
+    box-sizing: border-box !important;
+    width: var(--pf-sidebar) !important;
+    min-width: var(--pf-sidebar) !important;
+    max-width: var(--pf-sidebar) !important;
+    height: calc(100dvh - 32px) !important;
+    max-height: calc(100dvh - 32px) !important;
+    padding: 24px 18px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    scrollbar-width: thin;
+    scrollbar-color: #504945 transparent;
+    z-index: 20 !important;
+  }
+  body:has(.feed-left-sidebar) .feed-background {
+    display: block !important;
+    margin: 0 0 0 calc(var(--pf-sidebar) + var(--pf-gap)) !important;
+    padding: 0 !important;
+  }
+  .feed-background > .flex-auto {
+    width: 100% !important;
+    max-width: none !important;
+    padding: 0 !important;
+    min-width: 0 !important;
+  }
+  .feed-content {
+    display: flex !important;
+    flex-flow: row nowrap !important;
+    gap: 24px !important;
+    justify-content: stretch !important;
+    align-items: flex-start !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 28px 0 0 !important;
+  }
+  .feed-content > div {
+    flex: 1 1 0 !important;
+    width: auto !important;
+    min-width: 0 !important;
+    overflow: visible !important;
+  }
+  .feed-right-column {
+    flex: 0 0 clamp(260px, 22vw, 330px) !important;
+    width: clamp(260px, 22vw, 330px) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1279px) {
+  body:has(.feed-left-sidebar) { padding: 14px !important; }
+  body:has(.feed-left-sidebar) .header-wrapper { margin-bottom: 18px !important; }
+  .feed-background { gap: 18px !important; }
+  .feed-left-sidebar {
+    position: static !important;
+    inset: auto !important;
+    height: auto !important;
+    max-height: none !important;
+    padding: 18px !important;
+  }
+  .feed-content { padding: 0 !important; gap: 18px !important; }
+}
+
+@media (max-width: 767px) {
+  body:has(.feed-left-sidebar) { padding: 10px !important; }
+  body:has(.feed-left-sidebar) .header-wrapper { border-radius: 20px !important; }
+  .feed-content { padding-inline: 0 !important; }
+  .feed-left-sidebar {
+    position: static !important;
+    inset: auto !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+  #dashboard .news > :is(article, section, div),
+  #dashboard > .Stack > :is(article, section, div) {
+    padding: 18px !important;
+    border-radius: 20px !important;
+  }
+  .Box-row { padding: 12px 16px !important; }
+}

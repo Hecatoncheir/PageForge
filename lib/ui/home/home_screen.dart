@@ -17,6 +17,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   HomeTab _tab = HomeTab.appearance;
+  bool _showAll = false;
   int _messageId = 0;
   HomeViewModel get model => widget.model;
 
@@ -33,7 +34,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _selectTab(HomeTab tab) {
-    setState(() => _tab = tab);
+    setState(() {
+      _tab = tab;
+      _showAll = false;
+    });
     model.developmentMode(tab == HomeTab.development);
   }
 
@@ -119,7 +123,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     ? Duration.zero
                     : const Duration(milliseconds: 220),
                 switchInCurve: Curves.easeOutCubic,
-                child: _tab == HomeTab.appearance
+                child: _showAll
+                    ? _LibraryPanel(
+                        key: const ValueKey('library'),
+                        model: model,
+                        onBack: () => setState(() => _showAll = false),
+                      )
+                    : _tab == HomeTab.appearance
                     ? _AppearancePanel(
                         key: const ValueKey(HomeTab.appearance),
                         model: model,
@@ -145,7 +155,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
-                      state?.supported == true
+                      _showAll
+                          ? 'Все сайты'
+                          : state?.supported == true
                           ? 'Только для этого сайта'
                           : 'Откройте сайт в браузере',
                       style: TextStyle(
@@ -170,12 +182,30 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   const SizedBox(width: 4),
-                  Text(
-                    'ZIP ↔',
-                    style: TextStyle(
-                      fontFamily: 'JetBrainsMono',
-                      fontSize: 8,
-                      color: colors.onSurfaceVariant,
+                  TextButton(
+                    onPressed: model.busy
+                        ? null
+                        : () {
+                            final show = !_showAll;
+                            _selectTab(HomeTab.appearance);
+                            setState(() => _showAll = show);
+                          },
+                    style: TextButton.styleFrom(
+                      minimumSize: const Size(40, 30),
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      foregroundColor: _showAll
+                          ? colors.primary
+                          : colors.onSurfaceVariant,
+                      backgroundColor: _showAll
+                          ? colors.primary.withValues(alpha: 0.08)
+                          : null,
+                    ),
+                    child: const Text(
+                      'Все',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
                 ],
@@ -330,6 +360,125 @@ class _AppearancePanel extends StatelessWidget {
                     appearance: appearances[index],
                     model: model,
                   ),
+                ),
+        ),
+      ],
+    );
+  }
+}
+
+class _LibraryPanel extends StatelessWidget {
+  const _LibraryPanel({super.key, required this.model, required this.onBack});
+
+  final HomeViewModel model;
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final appearances = model.context?.allAppearances ?? [];
+    return Column(
+      children: [
+        Row(
+          children: [
+            IconButton(
+              onPressed: onBack,
+              tooltip: 'К текущему сайту',
+              icon: const Icon(Icons.arrow_back, size: 18),
+            ),
+            const Expanded(
+              child: Text(
+                'Все оформления',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+              ),
+            ),
+            Text(
+              '${appearances.length}',
+              style: TextStyle(
+                fontFamily: 'JetBrainsMono',
+                fontSize: 10,
+                color: colors.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Expanded(
+          child: appearances.isEmpty
+              ? const Center(child: Text('Пока нет оформлений'))
+              : ListView.separated(
+                  key: const PageStorageKey('library'),
+                  padding: const EdgeInsets.only(bottom: 6),
+                  itemCount: appearances.length,
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 10),
+                  itemBuilder: (context, index) {
+                    final appearance = appearances[index];
+                    final compatible =
+                        appearance.compatible &&
+                        model.context?.supported == true;
+                    final selected = model.context?.selectedId == appearance.id;
+                    return Material(
+                      color: colors.surfaceContainerLow,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        side: BorderSide(
+                          color: selected ? colors.primary : colors.outline,
+                        ),
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 7,
+                        ),
+                        onTap: compatible && !model.busy
+                            ? () => model.select(appearance.id)
+                            : null,
+                        title: Text(
+                          appearance.name,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: compatible
+                                ? colors.onSurface
+                                : colors.onSurfaceVariant,
+                          ),
+                        ),
+                        subtitle: Text(
+                          appearance.siteLabel,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontFamily: 'JetBrainsMono',
+                            fontSize: 9,
+                            color: colors.onSurfaceVariant,
+                          ),
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _CardAction(
+                              label: 'Выгрузить ${appearance.name}',
+                              icon: Icons.file_download_outlined,
+                              onPressed: model.busy
+                                  ? null
+                                  : () => model.exportArchive(appearance.id),
+                            ),
+                            _CardAction(
+                              label: 'Удалить ${appearance.name}',
+                              icon: Icons.delete_outline,
+                              onPressed: model.busy
+                                  ? null
+                                  : () => model.remove(appearance.id),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 ),
         ),
       ],

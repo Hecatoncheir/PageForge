@@ -60,17 +60,24 @@ h1 span::after { content: ''; position: absolute; height: 7px; left: 2px; right:
 .popup-preview iframe { width: 380px; height: 580px; border: 0; display: block; }
 .static-app { width: 380px; height: 580px; background: var(--surface); padding: 18px; display: flex; flex-direction: column; }
 .static-segmented { display: grid; grid-template-columns: 1fr 1fr; padding: 4px; border: 1px solid var(--line); border-radius: 13px; background: var(--bg); font-size: 12px; font-weight: 800; text-align: center; color: var(--muted); }
-.static-segmented span { padding: 10px; }
-.static-segmented span:first-child { background: var(--raised); color: var(--ink); border-radius: 9px; }
+.static-segmented { position: relative; isolation: isolate; }
+.static-segmented::before { content: ''; position: absolute; inset: 4px auto 4px 4px; width: calc((100% - 8px) / 2); border-radius: 9px; background: var(--raised); z-index: -1; transition: transform 260ms var(--ease); }
+.static-segmented[data-active='development']::before { transform: translateX(100%); }
+.static-segmented button { padding: 10px; background: transparent; color: var(--muted); font-weight: 800; border-radius: 9px; }
+.static-segmented button[aria-selected='true'] { color: var(--ink); }
+.static-panel { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.static-app [hidden] { display: none !important; }
 .static-header { display: flex; justify-content: space-between; align-items: center; padding: 19px 0 16px; }
 .static-header .wordmark { font-size: 19px; gap: 6px; }
 .static-header .wordmark svg { width: 23px; height: 28px; }
 .static-header > .mono { font-size: 9px; color: var(--muted); }
 .static-original { display: flex; align-items: center; gap: 8px; padding: 8px 1px 14px; font-size: 11px; color: var(--muted); }
+.static-original { width: 100%; background: transparent; text-align: left; }
 .static-original .icon { width: 14px; height: 14px; }
 .static-original > span:last-child { margin-left: auto; }
 .static-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex: 1; min-height: 0; }
 .static-card { padding: 7px; border: 1px solid var(--line); background: var(--bg); border-radius: 14px; }
+.static-card { text-align: left; color: var(--ink); }
 .static-card.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 .static-mini { height: 100px; background: var(--mini-bg); color: var(--mini-ink); border-radius: 8px; padding: 10px; overflow: hidden; }
 .static-mini b { display: block; font: 900 10px 'Nunito',sans-serif; border-bottom: 1px solid currentColor; padding-bottom: 4px; margin-bottom: 8px; }
@@ -90,7 +97,27 @@ h1 span::after { content: ''; position: absolute; height: 7px; left: 2px; right:
 .static-card-footer .icon { width: 13px; height: 13px; }
 .static-footer { display: flex; gap: 6px; align-items: center; font-size: 9px; color: var(--muted); padding-top: 13px; margin-top: 16px; border-top: 1px solid var(--line); }
 .static-footer i { width: 5px; height: 5px; background: var(--green); border-radius: 50%; }
-.static-footer > span { margin-left: auto; font-size: 8px; }
+.static-footer > span { font-size: 9px; }
+.static-all { margin-left: auto; border-radius: 8px; padding: 4px 8px; background: transparent; color: var(--muted); font-size: 11px; font-weight: 800; }
+.static-all[aria-pressed='true'] { background: var(--raised); color: var(--accent); }
+.static-development { gap: 14px; padding-top: 8px; }
+.static-zone { border: 1px solid var(--line); border-radius: 18px; width: 100%; background: transparent; color: var(--ink); cursor: default; }
+.static-zone b { font-family: 'Nunito',sans-serif; font-size: 17px; font-weight: 900; }
+.static-zone small { display: block; font-size: 10px; color: var(--muted); margin-top: 6px; }
+.static-import { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 10px; }
+.static-import > [data-icon] { display: grid; place-items: center; width: 58px; height: 58px; border-radius: 17px; background: var(--raised); color: var(--accent); margin-bottom: 4px; }
+.static-zip { font-size: 8px; color: var(--muted); border: 1px solid var(--line); border-radius: 5px; padding: 4px 7px; margin-top: 8px; }
+.static-export { display: flex; align-items: center; gap: 16px; text-align: left; padding: 20px; min-height: 116px; background: var(--raised); }
+.static-export > [data-icon] { display: flex; color: var(--accent); }
+.static-export > span:last-child { margin-left: auto; color: var(--muted); }
+.static-library-heading { display: flex; align-items: center; gap: 12px; font-size: 14px; padding-bottom: 12px; }
+.static-library-heading button { background: transparent; font-size: 22px; border-radius: 8px; }
+.static-library-heading > span { margin-left: auto; font-size: 10px; color: var(--muted); }
+.static-library-list { overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 1px 2px 4px; }
+.static-library-row { display: block; text-align: left; flex-shrink: 0; border: 1px solid var(--line); border-radius: 14px; padding: 16px; color: var(--ink); background: var(--bg); }
+.static-library-row b { display: block; font-size: 12px; }
+.static-library-row > span { display: block; font-size: 9px; color: var(--muted); margin-top: 6px; }
+.static-library-row.active { border-color: var(--accent); }
 .stage-note { position: absolute; right: 70px; bottom: -4px; font: 700 12px 'Nunito', sans-serif; color: var(--muted); transform: rotate(-4deg); }
 .sketch-arrow { display: inline-block; font-size: 28px; margin-right: 8px; transform: rotate(18deg); color: var(--accent); }
 .site-footer { border-top: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 11px; gap: 20px; }

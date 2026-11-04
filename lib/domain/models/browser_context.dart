@@ -11,6 +11,7 @@ class BrowserContext {
     this.selectedId,
     this.theme = 'dark',
     this.appearances = const [],
+    this.allAppearances = const [],
   });
 
   final String siteLabel;
@@ -22,6 +23,7 @@ class BrowserContext {
   final String? selectedId;
   final String theme;
   final List<Appearance> appearances;
+  final List<Appearance> allAppearances;
 
   factory BrowserContext.fromJson(Map<String, Object?> json) {
     return BrowserContext(
@@ -35,6 +37,10 @@ class BrowserContext {
       theme: json['theme'] as String? ?? 'dark',
       appearances: [
         for (final item in json['profiles'] as List<Object?>? ?? [])
+          Appearance.fromJson(item as Map<String, Object?>),
+      ],
+      allAppearances: [
+        for (final item in json['library'] as List<Object?>? ?? [])
           Appearance.fromJson(item as Map<String, Object?>),
       ],
     );

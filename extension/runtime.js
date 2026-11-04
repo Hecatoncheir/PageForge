@@ -153,7 +153,8 @@
     const preferences = await settings();
     const usable = supported(tab);
     const address = usable ? new URL(tab.url) : null;
-    const available = usable ? (await store.all()).filter((profile) => profiles.matches(profile.matches, tab.url)) : [];
+    const all = (await store.all()).sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+    const available = usable ? all.filter((profile) => profiles.matches(profile.matches, tab.url)) : [];
     const selectedId = usable ? preferences.selections[address.origin] : null;
     if (args.refreshPreview && usable) void pendingPreviews(tab.id, true).catch(() => {});
     return {
@@ -161,9 +162,14 @@
       url: usable ? tab.url : null, originPattern: usable ? originPattern(tab.url) : null,
       supported: usable, extension: true, theme: preferences.theme, version: api.runtime.getManifest().version,
       selectedId: available.some((profile) => profile.id === selectedId) ? selectedId : null,
-      profiles: available.sort((a, b) => a.name.localeCompare(b.name, 'ru')).map((profile) => ({
+      profiles: available.map((profile) => ({
         id: profile.id, name: profile.name, version: profile.version,
         preview: profile.preview, previewState: profile.previewState, previewError: profile.previewError,
+      })),
+      library: all.map((profile) => ({
+        id: profile.id, name: profile.name, version: profile.version,
+        siteLabel: [...new Set(profile.matches.map((pattern) => profiles.parsePattern(pattern).host))].join(', '),
+        compatible: usable && profiles.matches(profile.matches, tab.url),
       })),
     };
   }
@@ -225,7 +231,10 @@
       });
     }
     const archive = profiles.encodeArchive(profile);
-    const domain = supported(tab) ? new URL(tab.url).hostname.replace(/[^a-z0-9.-]/gi, '_') : profile.id;
+    const host = supported(tab) && profiles.matches(profile.matches, tab.url)
+      ? new URL(tab.url).hostname
+      : profiles.parsePattern(profile.matches[0]).host.replace(/^\*\./, '');
+    const domain = host.replace(/[^a-z0-9.-]/gi, '_');
     const filename = `${domain}.zip`;
     const downloadId = await PageForgeDownloads.save(filename, profiles.toBase64(archive));
     return { message: `Архив передан браузеру: ${filename}`, downloadId };

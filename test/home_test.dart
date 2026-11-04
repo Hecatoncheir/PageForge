@@ -120,4 +120,78 @@ void main() {
       expect(model.message, 'Неверное правило');
     },
   );
+
+  for (final size in [const Size(380, 580), const Size(320, 480)]) {
+    testWidgets(
+      'Общий список показывает другие сайты и позволяет управлять ими в $size',
+      (tester) async {
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        var removed = false;
+        final calls = <String>[];
+        final repository = BrowserRepository(
+          loader: () async => BrowserContext.fromJson({
+            'siteLabel': 'example.com',
+            'version': '0.1.0',
+            'tabId': 7,
+            'supported': true,
+            'extension': true,
+            'originPattern': 'https://example.com/*',
+            'profiles': [
+              {'id': 'paper', 'name': 'Бумага', 'version': '1.0.0'},
+            ],
+            'library': [
+              {
+                'id': 'paper',
+                'name': 'Бумага',
+                'version': '1.0.0',
+                'siteLabel': 'example.com',
+                'compatible': true,
+              },
+              if (!removed)
+                {
+                  'id': 'other',
+                  'name': 'Другое оформление',
+                  'version': '1.0.0',
+                  'siteLabel': 'other.example',
+                  'compatible': false,
+                },
+            ],
+          }),
+          command: (name, args) async {
+            calls.add('$name:${args['id']}');
+            if (name == 'delete') removed = true;
+            return {};
+          },
+        );
+        await tester.pumpWidget(PageForgeApp(repository: repository));
+        await tester.pumpAndSettle();
+        expect(find.text('Другое оформление'), findsNothing);
+        await tester.tap(find.text('Все'));
+        await tester.pumpAndSettle();
+        expect(find.text('Все оформления'), findsOneWidget);
+        expect(find.text('other.example'), findsOneWidget);
+        await tester.tap(find.text('Другое оформление'));
+        await tester.pumpAndSettle();
+        expect(calls, isNot(contains('select:other')));
+        await tester.tap(find.byTooltip('Выгрузить Другое оформление'));
+        await tester.pumpAndSettle();
+        expect(calls, contains('export:other'));
+        await tester.tap(find.text('Бумага'));
+        await tester.pumpAndSettle();
+        expect(calls, contains('select:paper'));
+        await tester.tap(find.byTooltip('Удалить Другое оформление'));
+        await tester.pumpAndSettle();
+        expect(find.text('other.example'), findsNothing);
+        await tester.tap(find.byTooltip('К текущему сайту'));
+        await tester.pumpAndSettle();
+        expect(find.text('Все оформления'), findsNothing);
+        expect(find.text('Исходное отображение'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox());
+      },
+    );
+  }
 }

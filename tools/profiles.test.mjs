@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readdir, readFile } from 'node:fs/promises';
+import path from 'node:path';
 import * as zip from 'fflate';
 
 globalThis.fflate = zip;
@@ -10,6 +12,27 @@ const archive = (extra = {}, metadata = manifest) => zip.zipSync({
   'profile.json': zip.strToU8(JSON.stringify(metadata)),
   'styles.css': zip.strToU8('body { background: #fbf1c7; }'),
   ...extra,
+});
+
+test('Публичные примеры импортируются с локальными ресурсами и без снимков страниц', async () => {
+  const root = path.resolve('examples');
+  async function collect(directory, prefix = '') {
+    const files = {};
+    for (const entry of await readdir(directory, { withFileTypes: true })) {
+      const name = `${prefix}${entry.name}`;
+      const target = path.join(directory, entry.name);
+      if (entry.isDirectory()) Object.assign(files, await collect(target, `${name}/`));
+      else files[name] = new Uint8Array(await readFile(target));
+    }
+    return files;
+  }
+  for (const entry of await readdir(root, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const files = await collect(path.join(root, entry.name));
+    assert.ok(Object.keys(files).every((name) => !name.startsWith('reference/')));
+    const profile = profiles.decodeArchive(zip.zipSync(files));
+    assert.ok(profiles.payload(profile).css.length > 0);
+  }
 });
 
 test('Правила адресов различают протоколы, домены и пути', () => {

@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "id": "github-gruvbox-studio",
+  "name": "GitHub · Gruvbox Studio",
+  "version": "1.0.0",
+  "mode": "css",
+  "matches": ["https://github.com/*"],
+  "description": "Тёмный Gruvbox: отдельная боковая панель, округлённая верхняя панель и просторные карточки главной страницы GitHub."
+}
