@@ -114,6 +114,10 @@ def package_extensions(root, version):
         (target / "licenses").mkdir()
         for license_file in (root / "design" / "assets" / "fonts").glob("*-OFL.txt"):
             shutil.copyfile(license_file, target / "licenses" / license_file.name)
+        shutil.copyfile(
+            root / "lib" / "ui" / "widgets" / "cupertino" / "LICENSE",
+            target / "licenses" / "flutter-cupertino.txt",
+        )
         manifest = browser_manifest(base, browser, version)
         (target / "manifest.json").write_text(
             json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"

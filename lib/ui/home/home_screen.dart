@@ -1,7 +1,7 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../domain/models/appearance.dart';
+import '../widgets/cupertino/sliding_segmented_control.dart';
 import 'home_view_model.dart';
 
 enum HomeTab { appearance, development }
@@ -132,6 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 12),
             Divider(height: 1, color: colors.outline),
+            const SizedBox(height: 12),
             SizedBox(
               height: 32,
               child: Row(
@@ -201,41 +202,41 @@ class _ModeSelector extends StatelessWidget {
       HomeTab.development: 'Разработка',
     };
     return DecoratedBox(
-      decoration: BoxDecoration(
+      decoration: ShapeDecoration(
         color: colors.surfaceContainerLow,
-        border: Border.all(color: colors.outline),
-        borderRadius: BorderRadius.circular(16),
+        shape: RoundedSuperellipseBorder(
+          side: BorderSide(color: colors.outline),
+          borderRadius: BorderRadius.circular(14),
+        ),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(3),
-        child: CupertinoSlidingSegmentedControl<HomeTab>(
-          groupValue: value,
-          backgroundColor: Colors.transparent,
-          thumbColor: colors.surfaceContainerHighest,
-          padding: const EdgeInsets.all(4),
-          onValueChanged: (selected) {
-            if (selected != null) onChanged(selected);
-          },
-          children: {
-            for (final entry in labels.entries)
-              entry.key: SizedBox(
-                height: 34,
-                child: Center(
-                  child: Text(
-                    entry.value,
-                    style: TextStyle(
-                      fontFamily: 'NunitoSans',
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      color: value == entry.key
-                          ? colors.onSurface
-                          : colors.onSurfaceVariant,
-                    ),
+      child: PageForgeSlidingSegmentedControl<HomeTab>(
+        groupValue: value,
+        backgroundColor: Colors.transparent,
+        thumbColor: colors.surfaceContainerHighest,
+        showThumbShadow: Theme.of(context).brightness == Brightness.dark,
+        padding: const EdgeInsets.all(4),
+        onValueChanged: (selected) {
+          if (selected != null) onChanged(selected);
+        },
+        children: {
+          for (final entry in labels.entries)
+            entry.key: SizedBox(
+              height: 34,
+              child: Center(
+                child: Text(
+                  entry.value,
+                  style: TextStyle(
+                    fontFamily: 'NunitoSans',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    color: value == entry.key
+                        ? colors.onSurface
+                        : colors.onSurfaceVariant,
                   ),
                 ),
               ),
-          },
-        ),
+            ),
+        },
       ),
     );
   }

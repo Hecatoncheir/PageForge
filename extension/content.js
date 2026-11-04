@@ -17,17 +17,25 @@
   }
 
   function clean(element, assets = {}) {
-    for (const node of [...element.querySelectorAll('*')]) {
-      if (!allowedTags.has(node.tagName)) { node.remove(); continue; }
-      for (const attribute of [...node.attributes]) {
+    function copyNode(node) {
+      if (node.nodeType === Node.TEXT_NODE) return document.createTextNode(node.textContent);
+      if (node.nodeType !== Node.ELEMENT_NODE || !allowedTags.has(node.tagName)) return null;
+      const safe = document.createElement(node.tagName.toLowerCase());
+      for (const attribute of node.attributes) {
         const name = attribute.name.toLowerCase();
-        if (!['id', 'class', 'title', 'alt', 'href', 'src', 'role', 'width', 'height', 'colspan', 'rowspan', 'datetime', 'open', 'type'].includes(name) && !name.startsWith('aria-')) node.removeAttribute(name);
+        if (!['id', 'class', 'title', 'alt', 'href', 'src', 'role', 'width', 'height', 'colspan', 'rowspan', 'datetime', 'open', 'type'].includes(name) && !name.startsWith('aria-')) continue;
+        let value = attribute.value;
+        if (name === 'src') value = assets[value] ?? safeUrl(value, true);
+        if (name === 'href') value = safeUrl(value);
+        safe.setAttribute(name, value);
       }
-      if (node.hasAttribute('src')) node.setAttribute('src', assets[node.getAttribute('src')] ?? safeUrl(node.getAttribute('src'), true));
-      if (node.hasAttribute('href')) node.setAttribute('href', safeUrl(node.getAttribute('href')));
-      if (node.tagName === 'BUTTON') node.setAttribute('type', 'button');
-      if (node.tagName === 'A') node.setAttribute('rel', 'noopener noreferrer');
+      if (node.tagName === 'BUTTON') safe.setAttribute('type', 'button');
+      if (node.tagName === 'A') safe.setAttribute('rel', 'noopener noreferrer');
+      safe.append(...[...node.childNodes].map(copyNode).filter(Boolean));
+      return safe;
     }
+    // Исходные узлы остаются в инертном шаблоне, в страницу попадают только очищенные копии.
+    element.replaceChildren(...[...element.childNodes].map(copyNode).filter(Boolean));
     return element;
   }
 
@@ -44,10 +52,10 @@
       for (const target of targets) {
         if (binding.kind === 'text' && target.textContent !== source.textContent) target.textContent = source.textContent;
         if (binding.kind === 'html') {
-          const copy = document.createElement('div');
-          copy.append(...[...source.childNodes].map((node) => node.cloneNode(true)));
-          clean(copy, current.assets);
-          if (target.innerHTML !== copy.innerHTML) target.replaceChildren(...copy.childNodes);
+          const copy = document.createElement('template');
+          copy.content.append(...[...source.childNodes].map((node) => node.cloneNode(true)));
+          clean(copy.content, current.assets);
+          if (target.innerHTML !== copy.innerHTML) target.replaceChildren(copy.content);
         }
         if (binding.kind === 'href' || binding.kind === 'src') {
           const value = safeUrl(source.getAttribute(binding.kind) ?? '', binding.kind === 'src');
@@ -75,12 +83,13 @@
       document.querySelector(binding.source);
       document.createElement('div').querySelector(binding.target);
     }
-    const parsed = new DOMParser().parseFromString(payload.template, 'text/html');
-    clean(parsed.body, payload.assets);
+    const parsed = document.createElement('template');
+    parsed.innerHTML = payload.template;
+    clean(parsed.content, payload.assets);
     root = document.createElement('div');
     root.dataset.pageforgeRoot = '';
     root.className = 'pageforge-root';
-    root.append(...parsed.body.childNodes);
+    root.append(parsed.content);
     document.body.append(root);
     root.addEventListener('click', (event) => {
       for (const binding of current?.rules.bindings ?? []) {
@@ -103,10 +112,10 @@
   }
 
   function snapshot() {
-    const body = document.createElement('div');
-    for (const node of document.body.childNodes) if (node !== root) body.append(node.cloneNode(true));
-    clean(body);
-    for (const node of body.querySelectorAll('[href], [src]')) {
+    const body = document.createElement('template');
+    for (const node of document.body.childNodes) if (node !== root) body.content.append(node.cloneNode(true));
+    clean(body.content);
+    for (const node of body.content.querySelectorAll('[href], [src]')) {
       for (const attribute of ['href', 'src']) {
         if (!node.hasAttribute(attribute)) continue;
         try { const url = new URL(node.getAttribute(attribute)); url.search = ''; url.hash = ''; node.setAttribute(attribute, url.href); } catch { node.removeAttribute(attribute); }
