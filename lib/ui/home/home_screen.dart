@@ -214,7 +214,7 @@ class _ModeSelector extends StatelessWidget {
         backgroundColor: Colors.transparent,
         thumbColor: colors.surfaceContainerHighest,
         showThumbShadow: Theme.of(context).brightness == Brightness.dark,
-        padding: const EdgeInsets.all(4),
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
         onValueChanged: (selected) {
           if (selected != null) onChanged(selected);
         },
