@@ -62,6 +62,11 @@ async function openPopup(tabId) {
   await popup.setViewportSize({ width: 380, height: 580 });
   await popup.goto(`${origin}/index.html?tab=${tabId}`);
   await popup.getByRole('button', { name: 'Разработка', exact: true }).waitFor({ timeout: 60000 });
+  const frame = await popup.locator('#pageforge-app').evaluate((element) => {
+    const style = getComputedStyle(element);
+    return { radius: style.borderRadius, overflow: style.overflow, width: element.offsetWidth, height: element.offsetHeight };
+  });
+  assert.deepEqual(frame, { radius: '24px', overflow: 'hidden', width: 380, height: 580 });
 }
 
 async function command(name, args = {}) {
@@ -80,6 +85,7 @@ async function exportedFiles(tabId, id) {
   const result = await command('export', { tabId, id });
   assert.equal(result.error, undefined);
   const [download] = await worker.evaluate((downloadId) => chrome.downloads.search({ id: downloadId }), result.downloadId);
+  assert.match(download.filename, /[\\/]127\.0\.0\.1(?: \(\d+\))?\.zip$/);
   assert.ok(download.url.startsWith('data:application/zip;base64,'));
   return unzipSync(Buffer.from(download.url.split(',')[1], 'base64'));
 }

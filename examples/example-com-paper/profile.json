@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "example-com-paper",
   "name": "Бумага",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "mode": "css",
   "matches": ["https://example.com/*"]
 }

@@ -1,14 +1,17 @@
 body {
-  margin: 0 !important;
+  box-sizing: border-box;
+  max-width: 760px !important;
+  margin: 0 auto !important;
+  padding: 64px 32px !important;
   min-height: 100vh;
-  display: grid;
-  place-items: center;
+  display: block !important;
   background: #fbf1c7 !important;
   color: #282828 !important;
   font-family: system-ui, sans-serif !important;
 }
+html { background: #fbf1c7 !important; }
 body > div {
-  width: min(540px, calc(100vw - 64px)) !important;
+  width: auto !important;
   margin: 0 !important;
   padding: 38px !important;
   background: #f2e5bc !important;
@@ -17,5 +20,8 @@ body > div {
   box-shadow: none !important;
 }
 h1 { font-size: 38px; letter-spacing: -1px; }
-p { line-height: 1.8; }
+body > svg { width: 44px; margin: 0 0 32px !important; }
+p { line-height: 1.8; text-align: start; }
+body > p + p { font-size: 14px !important; opacity: 1 !important; }
 a { color: #af3a03 !important; }
+body > a { display: inline-block; margin-top: 24px; font-weight: 700; }

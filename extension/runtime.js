@@ -214,10 +214,10 @@
   }
 
   async function exportArchive(args) {
+    const tab = await target(args.tabId);
     let profile = args.id ? await store.get(args.id) : null;
     if (args.id && !profile) throw new Error('Оформление не найдено');
     if (!profile) {
-      const tab = await target(args.tabId);
       if (!supported(tab)) throw new Error('Откройте сайт для подготовки основы');
       profile = await queue(tab.id, async () => {
         await ensureEngine(tab.id);
@@ -225,7 +225,8 @@
       });
     }
     const archive = profiles.encodeArchive(profile);
-    const downloadId = await api.downloads.download({ url: `data:application/zip;base64,${profiles.toBase64(archive)}`, filename: `pageforge-${profile.id}.zip`, conflictAction: 'uniquify', saveAs: false });
+    const domain = supported(tab) ? new URL(tab.url).hostname.replace(/[^a-z0-9.-]/gi, '_') : profile.id;
+    const downloadId = await api.downloads.download({ url: `data:application/zip;base64,${profiles.toBase64(archive)}`, filename: `${domain}.zip`, conflictAction: 'uniquify', saveAs: false });
     return { message: 'ZIP подготовлен', downloadId };
   }
 

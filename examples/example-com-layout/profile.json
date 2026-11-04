@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "example-com-layout",
   "name": "Новый взгляд",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "mode": "layout",
   "matches": ["https://example.com/*"]
 }
