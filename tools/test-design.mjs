@@ -54,6 +54,9 @@ try {
     await page.getByRole('tab', { name: 'Отображение', exact: true }).click();
     await page.getByRole('button', { name: 'Все', exact: true }).click();
     await page.getByText('Все оформления', { exact: true }).waitFor();
+    assert.equal(await page.locator('.static-library-row .static-mini').count(), 5);
+    assert.equal(await page.locator('[data-library-index="1"] [data-library-status]').textContent(), 'Выбрано');
+    assert.equal(await page.locator('[data-library-index="0"] [data-library-status]').textContent(), 'Не выбрано');
     assert.equal(await page.getByText('docs.example', { exact: true }).isVisible(), true);
     await page.getByRole('button', { name: 'К текущему сайту', exact: true }).click();
     await page.getByRole('button', { name: 'Исходное отображение', exact: true }).click();
@@ -69,6 +72,8 @@ try {
   await page.goto(`${base}/index.html?theme=dark`);
   assert.match(await page.getByRole('link', { name: 'Скачать PageForge для Chrome', exact: true }).getAttribute('href'), /v0\.1\.0\/pageforge-chrome-0\.1\.0\.zip$/);
   await page.setViewportSize({ width: 1440, height: 900 });
+  await page.getByRole('button', { name: 'Все', exact: true }).click();
+  await page.screenshot({ path: path.join(output, 'site-library.png'), fullPage: true, animations: 'disabled' });
   for (const theme of ['dark', 'light']) {
     await page.goto(`${base}/brand.html?theme=${theme}`);
     await page.getByRole('heading', { name: 'Своя форма. Свой характер.' }).waitFor();

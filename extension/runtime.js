@@ -200,7 +200,7 @@
         siteLabel: [...new Set(profile.matches.map((pattern) => profiles.parsePattern(pattern).host))].join(', '),
         compatible: usable && profiles.matches(profile.matches, tab.url),
         repositoryUrl: profile.repository?.url,
-        update: profile.repository?.url === preferences.updates.profiles?.[profile.id]?.repositoryUrl
+        update: profile.repository && profile.repository.url === preferences.updates.profiles?.[profile.id]?.repositoryUrl
           ? releaseInfo(preferences.updates.profiles[profile.id], profile.version) : null,
       })),
     };

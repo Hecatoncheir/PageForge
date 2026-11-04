@@ -117,9 +117,21 @@ h1 span::after { content: ''; position: absolute; height: 7px; left: 2px; right:
 .static-library-heading button { background: transparent; font-size: 22px; border-radius: 8px; }
 .static-library-heading > span { margin-left: auto; font-size: 10px; color: var(--muted); }
 .static-library-list { overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 1px 2px 4px; }
-.static-library-row { display: block; text-align: left; flex-shrink: 0; border: 1px solid var(--line); border-radius: 14px; padding: 16px; color: var(--ink); background: var(--bg); }
+.static-library-row { display: grid; grid-template-columns: 88px 1fr 18px; gap: 10px; align-items: center; text-align: left; flex-shrink: 0; border: 1px solid var(--line); border-radius: 14px; padding: 10px; color: var(--ink); background: var(--bg); }
 .static-library-row b { display: block; font-size: 12px; }
-.static-library-row > span { display: block; font-size: 9px; color: var(--muted); margin-top: 6px; }
+.static-library-info { min-width: 0; }
+.static-library-info b { font-size: 12px; }
+.static-library-info > span, .static-library-info small { display: block; font-size: 9px; color: var(--muted); margin-top: 3px; }
+.static-library-check { display: flex; opacity: 0; color: var(--accent); }
+.static-library-check .icon { width: 16px; height: 16px; }
+.static-library-row.active .static-library-check { opacity: 1; }
+.static-library-row .static-mini { width: 88px; height: 56px; padding: 6px; }
+.static-library-row .static-mini b { font-size: 6px; padding-bottom: 2px; margin-bottom: 4px; }
+.static-library-row .static-mini strong { font-size: 7px; }
+.static-library-row .static-mini i { margin-top: 4px; }
+.static-library-row .static-mini > div { height: 10px; margin-top: 4px; }
+.static-repository { display: flex; align-items: center; justify-content: space-between; min-height: 48px; padding: 0 12px; border: 1px solid var(--line); border-radius: 12px; font-size: 11px; color: var(--muted); }
+.static-repository button { background: transparent; color: var(--accent); font-size: 22px; cursor: default; }
 .static-library-row.active { border-color: var(--accent); }
 .stage-note { position: absolute; right: 70px; bottom: -4px; font: 700 12px 'Nunito', sans-serif; color: var(--muted); transform: rotate(-4deg); }
 .sketch-arrow { display: inline-block; font-size: 28px; margin-right: 8px; transform: rotate(18deg); color: var(--accent); }

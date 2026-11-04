@@ -47,7 +47,11 @@
     });
     frame.querySelector('[data-demo-original] > span:last-child').textContent = index === null ? '◉' : '○';
     frame.querySelector('[data-demo-export]').textContent = examples[index]?.name ?? 'Основа для текущего сайта';
-    frame.querySelectorAll('[data-library-index]').forEach((row) => row.classList.toggle('active', Number(row.dataset.libraryIndex) === index));
+    frame.querySelectorAll('[data-library-index]').forEach((row) => {
+      const selected = Number(row.dataset.libraryIndex) === index;
+      row.classList.toggle('active', selected);
+      row.querySelector('[data-library-status]').textContent = selected ? 'Выбрано' : 'Не выбрано';
+    });
   }
 
   function updatePanels() {
@@ -100,13 +104,15 @@
     row.type = 'button';
     row.dataset.libraryIndex = index;
     row.className = 'static-library-row';
-    row.innerHTML = `<b>${name}</b><span class="mono">journal.example</span>`;
+    row.innerHTML = `<span class="static-library-info"><b>${name}</b><span class="mono">journal.example</span><small data-library-status>Не выбрано</small></span><span class="static-library-check" aria-hidden="true">${forge.icon('check')}</span>`;
+    row.prepend(card.querySelector('.static-mini').cloneNode(true));
     row.addEventListener('click', () => updateSelection(index));
     frame.querySelector('.static-library-list').append(row);
   });
   const other = document.createElement('div');
-  other.className = 'static-library-row';
-  other.innerHTML = '<b>Читалка</b><span class="mono">docs.example</span>';
+  other.className = 'static-library-row active';
+  other.innerHTML = `<span class="static-library-info"><b>Читалка</b><span class="mono">docs.example</span><small>Выбрано</small></span><span class="static-library-check" aria-hidden="true">${forge.icon('check')}</span>`;
+  other.prepend(grid.children[2].querySelector('.static-mini').cloneNode(true));
   frame.querySelector('.static-library-list').append(other);
   frame.querySelector('[data-demo-original]').addEventListener('click', () => updateSelection(null));
   all.addEventListener('click', () => {
