@@ -27,6 +27,9 @@ flutter:
     - family: NunitoSans
       fonts:
         - asset: design/assets/fonts/NunitoSans-Variable.ttf
+    - family: Roboto
+      fonts:
+        - asset: design/assets/fonts/NunitoSans-Variable.ttf
     - family: JetBrainsMono
       fonts:
         - asset: design/assets/fonts/JetBrainsMono-Variable.ttf

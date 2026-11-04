@@ -1,5 +1,6 @@
 (() => {
   const api = globalThis.browser ?? globalThis.chrome;
+  if (!api?.runtime?.id) document.documentElement.classList.add('standalone');
   const explicitTab = Number(new URLSearchParams(location.search).get('tab')) || null;
   const input = document.createElement('input');
   input.type = 'file'; input.accept = '.zip,application/zip'; input.hidden = true;

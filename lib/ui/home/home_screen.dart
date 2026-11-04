@@ -96,7 +96,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           : colors.onSurfaceVariant,
                     ),
                     textStyle: const WidgetStatePropertyAll(
-                      TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
+                      TextStyle(
+                        fontFamily: 'NunitoSans',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
                   segments: const [

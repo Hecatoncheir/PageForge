@@ -7,3 +7,27 @@ body {
   background: #32302f;
 }
 
+#pageforge-app {
+  width: 380px;
+  height: 580px;
+  overflow: hidden;
+}
+
+.standalone,
+.standalone body {
+  width: 100%;
+  height: 100%;
+}
+
+.standalone body {
+  display: grid;
+  place-items: center;
+  background: #282828;
+}
+
+.standalone #pageforge-app {
+  border: 1px solid #504945;
+  border-radius: 24px;
+  box-shadow: 0 24px 80px #1d202180;
+}
+
