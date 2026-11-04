@@ -4,15 +4,13 @@ body {
   height: 580px;
   margin: 0;
   overflow: hidden;
-  background: #282828;
+  background: #32302f;
 }
 
 #pageforge-app {
   box-sizing: border-box;
   width: 380px;
   height: 580px;
-  border: 1px solid #504945;
-  border-radius: 24px;
   overflow: hidden;
   isolation: isolate;
 }
@@ -30,6 +28,8 @@ body {
 }
 
 .standalone #pageforge-app {
+  border: 1px solid #504945;
+  border-radius: 24px;
   box-shadow: 0 24px 80px #1d202180;
 }
 

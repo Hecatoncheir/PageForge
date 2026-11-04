@@ -76,7 +76,7 @@ async function openPopup(tabId) {
     const style = getComputedStyle(element);
     return { radius: style.borderRadius, overflow: style.overflow, width: element.offsetWidth, height: element.offsetHeight };
   });
-  assert.deepEqual(frame, { radius: '24px', overflow: 'hidden', width: 380, height: 580 });
+  assert.deepEqual(frame, { radius: '0px', overflow: 'hidden', width: 380, height: 580 });
 }
 
 async function command(name, args = {}) {
