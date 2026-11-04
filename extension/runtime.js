@@ -5,6 +5,7 @@
   const queues = new Map();
   let mutationQueue = Promise.resolve();
   let registrationQueue = Promise.resolve();
+  let checkingUpdates;
 
   function queue(tabId, operation) {
     const task = (queues.get(tabId) ?? Promise.resolve()).catch(() => {}).then(operation);
@@ -21,7 +22,32 @@
 
   function supported(tab) { return Boolean(tab?.url && /^https?:\/\//i.test(tab.url)); }
   function originPattern(address) { const url = new URL(address); return `${url.protocol}//${url.hostname}/*`; }
-  async function settings() { return { selections: {}, theme: 'dark', ...await api.storage.local.get(['selections', 'theme']) }; }
+  async function settings() { return { selections: {}, theme: 'dark', updates: {}, ...await api.storage.local.get(['selections', 'theme', 'updates']) }; }
+
+  function releaseInfo(release, current) {
+    return release ? { ...release, available: PageForgeRepositories.newer(release.version, current) } : null;
+  }
+
+  async function checkUpdates() {
+    if (!await api.permissions.contains({ origins: [PageForgeRepositories.origins[0]] })) throw new Error('Для проверки релизов нужен доступ к GitHub');
+    const cache = new Map();
+    const latest = (url, extension = false) => {
+      const key = `${url}:${extension}`;
+      if (!cache.has(key)) cache.set(key, PageForgeRepositories.latestRelease(url, extension).catch((error) => ({ error: error.message })));
+      return cache.get(key);
+    };
+    const app = await latest('https://github.com/Hecatoncheir/PageForge', true);
+    const available = (await store.all()).filter((profile) => profile.repository);
+    const results = {};
+    for (let index = 0; index < available.length; index += 4) {
+      await Promise.all(available.slice(index, index + 4).map(async (profile) => {
+        const repositoryUrl = profile.repository.url;
+        results[profile.id] = { ...await latest(repositoryUrl), repositoryUrl };
+      }));
+    }
+    await api.storage.local.set({ updates: { checkedAt: Date.now(), app: app ?? {}, profiles: results } });
+    return { message: 'Проверка обновлений завершена' };
+  }
 
   async function target(tabId) {
     const tab = Number.isInteger(tabId) ? await api.tabs.get(tabId) : (await api.tabs.query({ active: true, currentWindow: true }))[0];
@@ -161,21 +187,28 @@
       tabId: tab.id, siteLabel: address?.hostname ?? 'Откройте обычную веб-страницу',
       url: usable ? tab.url : null, originPattern: usable ? originPattern(tab.url) : null,
       supported: usable, extension: true, theme: preferences.theme, version: api.runtime.getManifest().version,
+      appUpdate: releaseInfo(preferences.updates.app, api.runtime.getManifest().version),
       selectedId: available.some((profile) => profile.id === selectedId) ? selectedId : null,
       profiles: available.map((profile) => ({
         id: profile.id, name: profile.name, version: profile.version,
-        preview: profile.preview, previewState: profile.previewState, previewError: profile.previewError,
+        previewState: profile.previewState, previewError: profile.previewError,
       })),
       library: all.map((profile) => ({
         id: profile.id, name: profile.name, version: profile.version,
+        preview: profile.preview, previewState: profile.previewState,
+        selected: Object.values(preferences.selections).includes(profile.id),
         siteLabel: [...new Set(profile.matches.map((pattern) => profiles.parsePattern(pattern).host))].join(', '),
         compatible: usable && profiles.matches(profile.matches, tab.url),
+        repositoryUrl: profile.repository?.url,
+        update: profile.repository?.url === preferences.updates.profiles?.[profile.id]?.repositoryUrl
+          ? releaseInfo(preferences.updates.profiles[profile.id], profile.version) : null,
       })),
     };
   }
 
-  async function importArchive(args) {
+  async function importArchive(args, repository = null) {
     const profile = profiles.decodeArchive(args.archive);
+    if (repository) profile.repository = { url: repository.repositoryUrl };
     profiles.payload(profile);
     await mutate(async () => {
       const available = (await store.all()).filter((item) => item.id !== profile.id);
@@ -264,9 +297,20 @@
     if (command === 'state') return state(args);
     if (command === 'import') return importArchive(args);
     if (command === 'import-repository') {
-      PageForgeRepositories.source(args.url);
+      const repository = PageForgeRepositories.source(args.url);
       if (!await api.permissions.contains({ origins: PageForgeRepositories.origins })) throw new Error('Для загрузки оформления нужен доступ к GitHub');
-      return importArchive({ ...args, archive: await PageForgeRepositories.download(args.url) });
+      return importArchive({ ...args, archive: await PageForgeRepositories.download(args.url) }, repository);
+    }
+    if (command === 'check-updates') {
+      if (!checkingUpdates) checkingUpdates = checkUpdates().finally(() => { checkingUpdates = null; });
+      return checkingUpdates;
+    }
+    if (command === 'open-release') {
+      const url = new URL(args.url);
+      PageForgeRepositories.source(url.href);
+      if (!/^\/[^/]+\/[^/]+\/releases\/tag\/[^/]+$/.test(url.pathname)) throw new Error('Нужна ссылка на релиз GitHub');
+      await api.tabs.create({ url: url.href });
+      return {};
     }
     if (command === 'select') return select(args);
     if (command === 'delete') return remove(args);

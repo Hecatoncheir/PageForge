@@ -193,6 +193,7 @@ void main() {
                 'version': '1.0.0',
                 'siteLabel': 'example.com',
                 'compatible': true,
+                'preview': 'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAEUlEQVR4nGP41yD5H4QZYAwAXfIKWcwh+BsAAAAASUVORK5CYII=',
               },
               if (!removed)
                 {
@@ -201,6 +202,8 @@ void main() {
                   'version': '1.0.0',
                   'siteLabel': 'other.example',
                   'compatible': false,
+                  'selected': true,
+                  'preview': 'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAEUlEQVR4nGP41yD5H4QZYAwAXfIKWcwh+BsAAAAASUVORK5CYII=',
                 },
             ],
           }),
@@ -216,23 +219,107 @@ void main() {
         await tester.tap(find.text('Все'));
         await tester.pumpAndSettle();
         expect(find.text('Все оформления'), findsOneWidget);
-        expect(find.text('other.example'), findsOneWidget);
+        expect(find.textContaining('other.example\nВыбрано'), findsOneWidget);
+        expect(find.textContaining('example.com\nНе выбрано'), findsOneWidget);
+        expect(
+          find.byWidgetPredicate(
+            (widget) => widget is Image && widget.image is MemoryImage,
+          ),
+          findsNWidgets(2),
+        );
+        await tester.ensureVisible(find.text('Другое оформление'));
+        await tester.pumpAndSettle();
         await tester.tap(find.text('Другое оформление'));
         await tester.pumpAndSettle();
         expect(calls, isNot(contains('select:other')));
+        await tester.ensureVisible(
+          find.byTooltip('Выгрузить Другое оформление'),
+        );
+        await tester.pumpAndSettle();
         await tester.tap(find.byTooltip('Выгрузить Другое оформление'));
         await tester.pumpAndSettle();
         expect(calls, contains('export:other'));
+        await tester.ensureVisible(find.text('Бумага'));
+        await tester.pumpAndSettle();
         await tester.tap(find.text('Бумага'));
         await tester.pumpAndSettle();
         expect(calls, contains('select:paper'));
+        await tester.ensureVisible(find.byTooltip('Удалить Другое оформление'));
+        await tester.pumpAndSettle();
         await tester.tap(find.byTooltip('Удалить Другое оформление'));
         await tester.pumpAndSettle();
-        expect(find.text('other.example'), findsNothing);
+        expect(find.textContaining('other.example'), findsNothing);
         await tester.tap(find.byTooltip('К текущему сайту'));
         await tester.pumpAndSettle();
         expect(find.text('Все оформления'), findsNothing);
         expect(find.text('Исходное отображение'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox());
+      },
+    );
+  }
+
+  for (final size in [const Size(380, 580), const Size(320, 480)]) {
+    testWidgets(
+      'Проверка обновлений показывает релизы приложения и оформления в $size',
+      (tester) async {
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        var checked = false;
+        final opened = <String>[];
+        final repository = BrowserRepository(
+          loader: () async => BrowserContext.fromJson({
+            'siteLabel': 'github.com',
+            'version': '0.2.0',
+            'extension': true,
+            'appUpdate': checked
+                ? {
+                    'version': '0.3.0',
+                    'available': true,
+                    'url': 'https://github.com/Hecatoncheir/PageForge/releases/tag/v0.3.0',
+                  }
+                : null,
+            'library': [
+              {
+                'id': 'theme',
+                'name': 'Gruvbox',
+                'version': '1.0.0',
+                'siteLabel': 'github.com',
+                'repositoryUrl': 'https://github.com/owner/theme',
+                'update': checked
+                    ? {
+                        'version': '1.0.1',
+                        'available': true,
+                        'url': 'https://github.com/owner/theme/releases/tag/v1.0.1',
+                      }
+                    : null,
+              },
+            ],
+          }),
+          command: (name, args) async {
+            if (name == 'check-updates') checked = true;
+            if (name == 'open-release') opened.add(args['url']! as String);
+            return {};
+          },
+        );
+        await tester.pumpWidget(PageForgeApp(repository: repository));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Все'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byTooltip('Проверить обновления'));
+        await tester.pumpAndSettle();
+        expect(find.text('Новая версия 0.3.0'), findsOneWidget);
+        await tester.tap(find.byTooltip('Открыть релиз PageForge'));
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.byTooltip('Открыть релиз Gruvbox'));
+        await tester.tap(find.byTooltip('Открыть релиз Gruvbox'));
+        await tester.pumpAndSettle();
+        expect(opened, [
+          'https://github.com/Hecatoncheir/PageForge/releases/tag/v0.3.0',
+          'https://github.com/owner/theme/releases/tag/v1.0.1',
+        ]);
         expect(tester.takeException(), isNull);
         await tester.pumpWidget(const SizedBox());
       },

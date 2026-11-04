@@ -31,6 +31,10 @@
       const granted = await api.permissions.request({ origins: PageForgeRepositories.origins });
       if (!granted) throw new Error('Для загрузки оформления нужен доступ к GitHub');
     }
+    if (name === 'check-updates') {
+      const granted = await api.permissions.request({ origins: [PageForgeRepositories.origins[0]] });
+      if (!granted) throw new Error('Для проверки релизов нужен доступ к GitHub');
+    }
     const response = await api.runtime.sendMessage({ type: 'pageforge:command', command: name, args: { ...(explicitTab ? { tabId: explicitTab } : {}), ...args } });
     if (response?.error) throw new Error(response.error);
     return response?.data ?? {};

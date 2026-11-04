@@ -400,9 +400,18 @@ class _LibraryPanel extends StatelessWidget {
                 color: colors.onSurfaceVariant,
               ),
             ),
+            IconButton(
+              tooltip: 'Проверить обновления',
+              onPressed: model.context?.isExtension == true && !model.busy
+                  ? model.checkUpdates
+                  : null,
+              icon: const Icon(Icons.refresh, size: 19),
+            ),
           ],
         ),
         const SizedBox(height: 8),
+        _AppReleaseStatus(model: model),
+        const SizedBox(height: 10),
         Expanded(
           child: appearances.isEmpty
               ? const Center(child: Text('Пока нет оформлений'))
@@ -417,7 +426,7 @@ class _LibraryPanel extends StatelessWidget {
                     final compatible =
                         appearance.compatible &&
                         model.context?.supported == true;
-                    final selected = model.context?.selectedId == appearance.id;
+                    final selected = appearance.selected;
                     return Material(
                       color: colors.surfaceContainerLow,
                       shape: RoundedRectangleBorder(
@@ -428,6 +437,32 @@ class _LibraryPanel extends StatelessWidget {
                       ),
                       clipBehavior: Clip.antiAlias,
                       child: ListTile(
+                        selected: selected,
+                        horizontalTitleGap: 10,
+                        leading: ExcludeSemantics(
+                          child: SizedBox(
+                            width: 94,
+                            height: 56,
+                            child: Stack(
+                              children: [
+                                _AppearancePreview(
+                                  appearance: appearance,
+                                  height: 56,
+                                ),
+                                if (selected)
+                                  Positioned(
+                                    top: 3,
+                                    right: 3,
+                                    child: Icon(
+                                      Icons.check_circle,
+                                      size: 18,
+                                      color: colors.primary,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 12,
                           vertical: 7,
@@ -440,7 +475,7 @@ class _LibraryPanel extends StatelessWidget {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 11,
                             fontWeight: FontWeight.w800,
                             color: compatible
                                 ? colors.onSurface
@@ -448,8 +483,13 @@ class _LibraryPanel extends StatelessWidget {
                           ),
                         ),
                         subtitle: Text(
-                          appearance.siteLabel,
-                          maxLines: 1,
+                          [
+                            appearance.siteLabel,
+                            selected ? 'Выбрано' : 'Не выбрано',
+                            if (appearance.update != null)
+                              appearance.update!.label,
+                          ].join('\n'),
+                          maxLines: 3,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontFamily: 'JetBrainsMono',
@@ -460,6 +500,17 @@ class _LibraryPanel extends StatelessWidget {
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            if (appearance.update?.available == true &&
+                                appearance.update?.url != null)
+                              _CardAction(
+                                label: 'Открыть релиз ${appearance.name}',
+                                icon: Icons.new_releases_outlined,
+                                onPressed: model.busy
+                                    ? null
+                                    : () => model.openRelease(
+                                        appearance.update!.url!,
+                                      ),
+                              ),
                             _CardAction(
                               label: 'Выгрузить ${appearance.name}',
                               icon: Icons.file_download_outlined,
@@ -482,6 +533,66 @@ class _LibraryPanel extends StatelessWidget {
                 ),
         ),
       ],
+    );
+  }
+}
+
+class _AppReleaseStatus extends StatelessWidget {
+  const _AppReleaseStatus({required this.model});
+  final HomeViewModel model;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final release = model.context?.appUpdate;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colors.outline),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'PageForge ${model.context?.version ?? ''}',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Tooltip(
+                  message:
+                      release?.error ??
+                      'Проверка релизов PageForge и оформлений',
+                  child: Text(
+                    release?.label ?? 'Обновления приложения и оформлений',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: colors.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (release?.available == true && release?.url != null)
+            IconButton(
+              tooltip: 'Открыть релиз PageForge',
+              onPressed: model.busy
+                  ? null
+                  : () => model.openRelease(release!.url!),
+              icon: Icon(Icons.open_in_new, size: 19, color: colors.primary),
+            ),
+        ],
+      ),
     );
   }
 }
@@ -523,44 +634,7 @@ class _AppearanceCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
                 child: Column(
                   children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: SizedBox(
-                        height: 92,
-                        width: double.infinity,
-                        child: appearance.preview == null
-                            ? ColoredBox(
-                                color: colors.surfaceContainerHighest,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.web_outlined,
-                                      size: 27,
-                                      color: colors.onSurfaceVariant,
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      appearance.previewState == 'capturing'
-                                          ? 'Готовим превью…'
-                                          : 'Превью при открытии сайта',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontSize: 8,
-                                        color: colors.onSurfaceVariant,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            : Image.memory(
-                                appearance.preview!,
-                                fit: BoxFit.cover,
-                                alignment: Alignment.topCenter,
-                                gaplessPlayback: true,
-                              ),
-                      ),
-                    ),
+                    _AppearancePreview(appearance: appearance, height: 92),
                     const SizedBox(height: 8),
                     Row(
                       children: [
@@ -618,6 +692,59 @@ class _AppearanceCard extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _AppearancePreview extends StatelessWidget {
+  const _AppearancePreview({required this.appearance, required this.height});
+  final Appearance appearance;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: SizedBox(
+        height: height,
+        width: double.infinity,
+        child: appearance.preview == null
+            ? ColoredBox(
+                color: colors.surfaceContainerHighest,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.web_outlined,
+                      size: height < 80 ? 20 : 25,
+                      color: colors.onSurfaceVariant,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      appearance.previewState == 'capturing'
+                          ? 'Готовим превью…'
+                          : height < 80
+                          ? 'Откройте сайт'
+                          : 'Превью при открытии сайта',
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 8,
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            : Image.memory(
+                appearance.preview!,
+                fit: BoxFit.cover,
+                alignment: Alignment.topCenter,
+                gaplessPlayback: true,
+              ),
       ),
     );
   }

@@ -10,19 +10,23 @@
     const parts = url.pathname.replace(/\/+$/, '').split('/').slice(1);
     const [owner, originalName, kind, ...reference] = parts;
     const name = originalName?.replace(/\.git$/, '');
+    const releaseLink = kind === 'releases' && reference[0] === 'tag' && reference.length > 1;
     if (!/^[a-z\d][a-z\d-]{0,38}$/i.test(owner ?? '') || !/^[a-z\d_-][a-z\d._-]{0,99}$/i.test(name ?? '')
-      || parts.length > 2 && (!['tree', 'commit'].includes(kind) || !reference.length)) {
+      || parts.length > 2 && !releaseLink && (!['tree', 'commit'].includes(kind) || !reference.length)) {
       throw new Error('Укажите репозиторий или ссылку на его ветку');
     }
     let ref;
-    try { ref = reference.length ? decodeURIComponent(reference.join('/')) : 'HEAD'; } catch { throw new Error('Некорректная ссылка на ветку'); }
+    try { ref = reference.length ? decodeURIComponent((releaseLink ? reference.slice(1) : reference).join('/')) : 'HEAD'; } catch { throw new Error('Некорректная ссылка на ветку'); }
     if (!ref || ref.length > 200 || /[\s\\\x00-\x1f]/.test(ref)) throw new Error('Некорректная ссылка на ветку');
-    return { archiveUrl: `https://api.github.com/repos/${owner}/${name}/zipball/${encodeURIComponent(ref)}` };
+    return { owner, name, repositoryUrl: `https://github.com/${owner}/${name}`, archiveUrl: `https://api.github.com/repos/${owner}/${name}/zipball/${encodeURIComponent(ref)}` };
   }
 
-  async function readArchive(response) {
-    const limit = PageForgeProfiles.LIMITS.archive;
-    if (Number(response.headers.get('content-length')) > limit) throw new Error('Архив репозитория должен быть не больше 8 МБ');
+  async function readArchive(response, limit = PageForgeProfiles.LIMITS.archive) {
+    const message = limit === PageForgeProfiles.LIMITS.archive ? 'Архив репозитория должен быть не больше 8 МБ' : 'Ответ GitHub слишком большой';
+    if (Number(response.headers.get('content-length')) > limit) {
+      await response.body?.cancel();
+      throw new Error(message);
+    }
     const reader = response.body.getReader();
     const chunks = [];
     let size = 0;
@@ -31,7 +35,7 @@
         const { done, value } = await reader.read();
         if (done) break;
         size += value.length;
-        if (size > limit) throw new Error('Архив репозитория должен быть не больше 8 МБ');
+        if (size > limit) throw new Error(message);
         chunks.push(value);
       }
     } finally { await reader.cancel().catch(() => {}); }
@@ -67,21 +71,55 @@
     return result;
   }
 
-  async function download(value) {
-    const { archiveUrl } = source(value);
+  async function request(url) {
     try {
-      const response = await fetch(archiveUrl, { credentials: 'omit', referrerPolicy: 'no-referrer', signal: AbortSignal.timeout(20000) });
+      const response = await fetch(url, { credentials: 'omit', referrerPolicy: 'no-referrer', signal: AbortSignal.timeout(20000) });
       if (response.status === 404) throw new Error('Репозиторий или ветка не найдены. Нужен открытый репозиторий');
       if ([403, 429].includes(response.status)) throw new Error('GitHub ограничил загрузки. Попробуйте позже или добавьте ZIP');
       if (!response.ok) throw new Error(`GitHub не отдал архив (HTTP ${response.status})`);
-      if (!['api.github.com', 'codeload.github.com'].includes(new URL(response.url).hostname)) throw new Error('Неожиданный адрес архива репозитория');
-      return unpack(await readArchive(response));
+      const address = new URL(response.url);
+      if (address.protocol !== 'https:' || !['api.github.com', 'codeload.github.com'].includes(address.hostname)) throw new Error('Неожиданный адрес ответа GitHub');
+      return response;
     } catch (error) {
-      if (error.name === 'TimeoutError') throw new Error('GitHub не ответил за 20 секунд. Попробуйте ещё раз');
+      if (['TimeoutError', 'AbortError'].includes(error.name)) throw new Error('GitHub не ответил за 20 секунд. Попробуйте ещё раз');
       if (error instanceof TypeError) throw new Error('Не удалось скачать репозиторий. Проверьте подключение');
       throw error;
     }
   }
 
-  globalThis.PageForgeRepositories = { origins, source, unpack, download, readArchive };
+  async function download(value) {
+    return unpack(await readArchive(await request(source(value).archiveUrl)));
+  }
+
+  function versionParts(value) {
+    const match = /^v?(\d+)\.(\d+)\.(\d+)$/.exec(value ?? '');
+    const parts = match?.slice(1).map(Number);
+    return parts?.every(Number.isSafeInteger) ? parts : null;
+  }
+
+  function newer(candidate, current) {
+    const next = versionParts(candidate);
+    const installed = versionParts(current);
+    if (!next || !installed) return false;
+    for (let index = 0; index < 3; index++) {
+      if (next[index] !== installed[index]) return next[index] > installed[index];
+    }
+    return false;
+  }
+
+  async function latestRelease(value, extension = false) {
+    const { owner, name, repositoryUrl } = source(value);
+    const response = await request(`https://api.github.com/repos/${owner}/${name}/releases?per_page=20`);
+    let releases;
+    try { releases = JSON.parse(new TextDecoder().decode(await readArchive(response, 1024 * 1024))); }
+    catch { throw new Error('Не удалось прочитать список релизов GitHub'); }
+    if (!Array.isArray(releases)) throw new Error('Некорректный список релизов GitHub');
+    const available = releases.filter((release) => !release.draft && release.published_at && versionParts(release.tag_name))
+      .sort((a, b) => Date.parse(b.published_at) - Date.parse(a.published_at));
+    const latest = available.find((release) => !extension || ['chrome', 'firefox'].every((browser) => release.assets?.some((asset) => asset.name === `pageforge-${browser}-${release.tag_name.replace(/^v/, '')}.zip` && asset.state === 'uploaded')));
+    if (!latest) return null;
+    return { version: latest.tag_name.replace(/^v/, ''), url: `${repositoryUrl}/releases/tag/${encodeURIComponent(latest.tag_name)}` };
+  }
+
+  globalThis.PageForgeRepositories = { origins, source, unpack, download, readArchive, newer, latestRelease };
 })();

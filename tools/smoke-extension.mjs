@@ -202,6 +202,13 @@ try {
   await worker.evaluate((data) => {
     const originalFetch = globalThis.fetch;
     globalThis.fetch = async (url, options) => {
+      if (/^https:\/\/api\.github\.com\/repos\/(fixture\/theme|Hecatoncheir\/PageForge)\/releases\?per_page=20$/.test(url)) {
+        const app = url.includes('/Hecatoncheir/PageForge/');
+        const version = app ? '9.0.0' : '1.0.1';
+        const response = new Response(JSON.stringify([{ tag_name: `v${version}`, draft: false, published_at: '2026-11-04T00:00:00Z', assets: ['chrome', 'firefox'].map((browser) => ({ name: `pageforge-${browser}-${version}.zip`, state: 'uploaded' })) }]));
+        Object.defineProperty(response, 'url', { value: url });
+        return response;
+      }
       if (url !== 'https://api.github.com/repos/fixture/theme/zipball/HEAD') return originalFetch(url, options);
       const response = new Response(new Uint8Array(data));
       Object.defineProperty(response, 'url', { value: 'https://codeload.github.com/fixture/theme/legacy.zip/HEAD' });
@@ -222,8 +229,24 @@ try {
   await popup.getByRole('button', { name: 'Применить Из репозитория', exact: true }).waitFor();
   await popup.getByRole('button', { name: 'Применить Из репозитория', exact: true }).click();
   await site.waitForFunction(() => getComputedStyle(document.body).backgroundColor === 'rgb(50, 48, 47)');
+  await popup.getByRole('button', { name: 'Все', exact: true }).click();
+  await popup.getByRole('button', { name: 'Проверить обновления', exact: true }).click();
+  await popup.getByRole('button', { name: 'Открыть релиз Из репозитория', exact: true }).waitFor();
+  await popup.getByRole('button', { name: 'Открыть релиз PageForge', exact: true }).waitFor();
+  const updates = await command('state', { tabId });
+  assert.equal(updates.appUpdate.available, true);
+  assert.equal(updates.library.find((profile) => profile.id === 'repository').update.version, '1.0.1');
+  await popup.screenshot({ path: path.join(diagnostics, 'extension-updates.png'), animations: 'disabled' });
+  await worker.evaluate(() => {
+    globalThis.__originalCreateTab = chrome.tabs.create;
+    chrome.tabs.create = async (options) => { globalThis.__openedRelease = options.url; return { id: -1 }; };
+  });
+  await popup.getByRole('button', { name: 'Открыть релиз Из репозитория', exact: true }).click();
+  assert.equal(await worker.evaluate(() => globalThis.__openedRelease), 'https://github.com/fixture/theme/releases/tag/v1.0.1');
+  await worker.evaluate(() => { chrome.tabs.create = globalThis.__originalCreateTab; });
   await popup.getByRole('button', { name: 'Удалить Из репозитория', exact: true }).click();
   await site.waitForFunction(() => getComputedStyle(document.body).backgroundColor === 'rgb(255, 255, 255)');
+  await popup.getByRole('button', { name: 'К текущему сайту', exact: true }).click();
   const registrations = await worker.evaluate(() => chrome.scripting.getRegisteredContentScripts());
   assert.ok(registrations.every((entry) => entry.matches.every((pattern) => !/api\.github|codeload\.github/.test(pattern))));
 
@@ -231,12 +254,23 @@ try {
     'profile.json': strToU8(JSON.stringify({ schemaVersion: 1, id: 'foreign', name: 'Другой сайт', version: '1.0.0', mode: 'css', matches: ['https://other.example/*'] })),
   });
   assert.equal((await command('import', { tabId, archive: Buffer.from(foreign).toString('base64') })).error, undefined);
+  await worker.evaluate(async () => {
+    const { selections = {} } = await chrome.storage.local.get('selections');
+    selections['https://other.example'] = 'foreign';
+    await chrome.storage.local.set({ selections });
+    const profile = await PageForgeStore.get('paper');
+    profile.preview = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAEUlEQVR4nGP41yD5H4QZYAwAXfIKWcwh+BsAAAAASUVORK5CYII=';
+    profile.previewState = 'ready';
+    await PageForgeStore.put(profile);
+  });
   const listing = await command('state', { tabId });
   assert.equal(listing.profiles.some((item) => item.id === 'foreign'), false);
   assert.equal(listing.library.find((item) => item.id === 'foreign').compatible, false);
+  assert.equal(listing.library.find((item) => item.id === 'foreign').selected, true);
+  assert.ok(listing.library.find((item) => item.id === 'paper').preview.startsWith('data:image/png;'));
   await popup.getByRole('button', { name: 'Все', exact: true }).click();
   await popup.getByText('Все оформления', { exact: true }).waitFor();
-  const foreignRow = popup.getByRole('group', { name: /^Другой сайт\s+other\.example$/ });
+  const foreignRow = popup.getByRole('group', { name: /^Другой сайт\s+other\.example\s+Выбрано$/ });
   await foreignRow.waitFor();
   await popup.screenshot({ path: path.join(diagnostics, 'extension-library.png'), animations: 'disabled' });
   const foreignFiles = await exportedFiles(tabId, 'foreign', 'other.example.zip');
@@ -269,6 +303,8 @@ try {
     assert.equal(profile.id, 'github-gruvbox-studio');
     assert.ok(profile.css.includes('#1d2021'));
     assert.ok(profile.files['assets/fonts/NunitoSans-Variable.ttf']);
+    assert.equal(profile.repository.url, process.env.PAGEFORGE_TEST_REPOSITORY);
+    assert.equal((await command('check-updates')).error, undefined);
     console.log('Оформление загружено из настоящего открытого репозитория GitHub.');
   }
   console.log('Проверены Flutter, CSS, своя разметка, откат после ошибки, ZIP, снимок основы, сохранение после перезапуска и отсутствие внешних запросов интерфейса.');

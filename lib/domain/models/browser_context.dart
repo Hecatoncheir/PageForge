@@ -1,4 +1,5 @@
 import 'appearance.dart';
+import 'release_info.dart';
 
 class BrowserContext {
   const BrowserContext({
@@ -12,6 +13,7 @@ class BrowserContext {
     this.theme = 'dark',
     this.appearances = const [],
     this.allAppearances = const [],
+    this.appUpdate,
   });
 
   final String siteLabel;
@@ -24,8 +26,14 @@ class BrowserContext {
   final String theme;
   final List<Appearance> appearances;
   final List<Appearance> allAppearances;
+  final ReleaseInfo? appUpdate;
 
   factory BrowserContext.fromJson(Map<String, Object?> json) {
+    final library = [
+      for (final item in json['library'] as List<Object?>? ?? [])
+        Appearance.fromJson(item as Map<String, Object?>),
+    ];
+    final byId = {for (final appearance in library) appearance.id: appearance};
     return BrowserContext(
       siteLabel: json['siteLabel'] as String,
       version: json['version'] as String,
@@ -35,14 +43,15 @@ class BrowserContext {
       originPattern: json['originPattern'] as String?,
       selectedId: json['selectedId'] as String?,
       theme: json['theme'] as String? ?? 'dark',
+      appUpdate: json['appUpdate'] == null
+          ? null
+          : ReleaseInfo.fromJson(json['appUpdate'] as Map<String, Object?>),
       appearances: [
         for (final item in json['profiles'] as List<Object?>? ?? [])
-          Appearance.fromJson(item as Map<String, Object?>),
+          byId[(item as Map<String, Object?>)['id']] ??
+              Appearance.fromJson(item),
       ],
-      allAppearances: [
-        for (final item in json['library'] as List<Object?>? ?? [])
-          Appearance.fromJson(item as Map<String, Object?>),
-      ],
+      allAppearances: library,
     );
   }
 }

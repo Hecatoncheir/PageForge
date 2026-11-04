@@ -101,6 +101,10 @@ class HomeViewModel extends ChangeNotifier {
       'tabId': context?.tabId,
     }),
   );
+  Future<void> checkUpdates() =>
+      _run(() => _repository.execute('check-updates', {}));
+  Future<void> openRelease(String url) =>
+      _run(() => _repository.execute('open-release', {'url': url}));
   Future<void> toggleTheme() => _run(
     () =>
         _repository.execute('theme', {'theme': lightTheme ? 'dark' : 'light'}),
