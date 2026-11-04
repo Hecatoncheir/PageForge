@@ -94,9 +94,10 @@ async function upload(archive) {
 async function exportedFiles(tabId, id) {
   const result = await command('export', { tabId, id });
   assert.equal(result.error, undefined);
+  assert.equal(result.message, 'Архив передан браузеру: 127.0.0.1.zip');
   const [download] = await worker.evaluate((downloadId) => chrome.downloads.search({ id: downloadId }), result.downloadId);
   assert.equal(await worker.evaluate(() => globalThis.__pageForgeDownloadNames.at(-1)), '127.0.0.1.zip');
-  assert.ok(download.url.startsWith('data:application/zip;base64,'));
+  assert.ok(download.url.startsWith('data:application/zip;pageforge-name=127.0.0.1.zip;base64,'));
   return unzipSync(Buffer.from(download.url.split(',')[1], 'base64'));
 }
 

@@ -35,7 +35,7 @@ def project_version(root=ROOT):
 def browser_manifest(base, browser, version):
     manifest = {**base, "version": normalize_version(version)}
     if browser == "firefox":
-        manifest["background"] = {"scripts": ["vendor/fflate.js", "profiles.js", "store.js", "runtime.js", "background.js"]}
+        manifest["background"] = {"scripts": ["vendor/fflate.js", "profiles.js", "store.js", "downloads.js", "runtime.js", "background.js"]}
         manifest["browser_specific_settings"] = {
             "gecko_android": {"strict_min_version": "142.0"},
             "gecko": {
