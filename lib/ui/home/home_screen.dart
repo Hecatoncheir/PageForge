@@ -204,35 +204,38 @@ class _ModeSelector extends StatelessWidget {
       decoration: BoxDecoration(
         color: colors.surfaceContainerLow,
         border: Border.all(color: colors.outline),
-        borderRadius: BorderRadius.circular(13),
+        borderRadius: BorderRadius.circular(16),
       ),
-      child: CupertinoSlidingSegmentedControl<HomeTab>(
-        groupValue: value,
-        backgroundColor: Colors.transparent,
-        thumbColor: colors.surfaceContainerHighest,
-        padding: const EdgeInsets.all(4),
-        onValueChanged: (selected) {
-          if (selected != null) onChanged(selected);
-        },
-        children: {
-          for (final entry in labels.entries)
-            entry.key: SizedBox(
-              height: 34,
-              child: Center(
-                child: Text(
-                  entry.value,
-                  style: TextStyle(
-                    fontFamily: 'NunitoSans',
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    color: value == entry.key
-                        ? colors.onSurface
-                        : colors.onSurfaceVariant,
+      child: Padding(
+        padding: const EdgeInsets.all(3),
+        child: CupertinoSlidingSegmentedControl<HomeTab>(
+          groupValue: value,
+          backgroundColor: Colors.transparent,
+          thumbColor: colors.surfaceContainerHighest,
+          padding: const EdgeInsets.all(4),
+          onValueChanged: (selected) {
+            if (selected != null) onChanged(selected);
+          },
+          children: {
+            for (final entry in labels.entries)
+              entry.key: SizedBox(
+                height: 34,
+                child: Center(
+                  child: Text(
+                    entry.value,
+                    style: TextStyle(
+                      fontFamily: 'NunitoSans',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: value == entry.key
+                          ? colors.onSurface
+                          : colors.onSurfaceVariant,
+                    ),
                   ),
                 ),
               ),
-            ),
-        },
+          },
+        ),
       ),
     );
   }
