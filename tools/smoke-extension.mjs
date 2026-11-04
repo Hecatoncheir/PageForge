@@ -305,6 +305,10 @@ try {
     assert.ok(profile.files['assets/fonts/NunitoSans-Variable.ttf']);
     assert.equal(profile.repository.url, process.env.PAGEFORGE_TEST_REPOSITORY);
     assert.equal((await command('check-updates')).error, undefined);
+    const checked = await command('state', { tabId: restoredTabId });
+    assert.equal(checked.appUpdate.error, undefined);
+    assert.ok(checked.appUpdate.version);
+    assert.equal(checked.library.find((entry) => entry.id === imported.id).update.error, undefined);
     console.log('Оформление загружено из настоящего открытого репозитория GitHub.');
   }
   console.log('Проверены Flutter, CSS, своя разметка, откат после ошибки, ZIP, снимок основы, сохранение после перезапуска и отсутствие внешних запросов интерфейса.');
