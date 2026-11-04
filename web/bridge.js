@@ -55,7 +55,7 @@
 
   function overDropArea(event) {
     if (!dropEnabled) return false;
-    const element = document.querySelector('[aria-label="Добавить ZIP"]');
+    const element = document.querySelector('[flt-semantics-identifier="pageforge-import"]');
     const bounds = element?.getBoundingClientRect();
     return bounds && event.clientX >= bounds.left && event.clientX <= bounds.right && event.clientY >= bounds.top && event.clientY <= bounds.bottom;
   }

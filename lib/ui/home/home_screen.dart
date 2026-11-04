@@ -504,6 +504,7 @@ class _DevelopmentPanel extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Semantics(
+              identifier: 'pageforge-import',
               button: true,
               enabled: model.context?.isExtension == true && !model.busy,
               label: 'Добавить ZIP',

@@ -165,7 +165,7 @@ try {
   await popup.getByRole('button', { name: 'Добавить ZIP', exact: true }).waitFor();
   const dropped = theme('dropped', 'Перетаскивание');
   await popup.evaluate((data) => {
-    const target = document.querySelector('[aria-label="Добавить ZIP"]');
+    const target = document.querySelector('[flt-semantics-identifier="pageforge-import"]');
     const bounds = target.getBoundingClientRect();
     const transfer = new DataTransfer();
     transfer.items.add(new File([new Uint8Array(data)], 'drop.zip', { type: 'application/zip' }));
