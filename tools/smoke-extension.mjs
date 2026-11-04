@@ -204,11 +204,13 @@ try {
   assert.equal(listing.library.find((item) => item.id === 'foreign').compatible, false);
   await popup.getByRole('button', { name: 'Все', exact: true }).click();
   await popup.getByText('Все оформления', { exact: true }).waitFor();
-  await popup.getByText('Другой сайт', { exact: true }).waitFor();
+  const foreignRow = popup.getByRole('group', { name: /^Другой сайт\s+other\.example$/ });
+  await foreignRow.waitFor();
+  await popup.screenshot({ path: path.join(diagnostics, 'extension-library.png'), animations: 'disabled' });
   const foreignFiles = await exportedFiles(tabId, 'foreign', 'other.example.zip');
   assert.equal(JSON.parse(strFromU8(foreignFiles['profile.json'])).id, 'foreign');
   await popup.getByRole('button', { name: 'Удалить Другой сайт', exact: true }).click();
-  await popup.getByText('Другой сайт', { exact: true }).waitFor({ state: 'hidden' });
+  await foreignRow.waitFor({ state: 'hidden' });
   await popup.getByRole('button', { name: 'К текущему сайту', exact: true }).click();
 
   await popup.bringToFront();
