@@ -50,6 +50,9 @@ class BuildTests(unittest.TestCase):
             (root / "design" / "assets" / "vendor").mkdir()
             for name in ("fflate.js", "fflate-LICENSE.txt"):
                 (root / "design" / "assets" / "vendor" / name).write_text("fixture", encoding="utf-8")
+            license_path = root / "lib" / "ui" / "widgets" / "cupertino" / "LICENSE"
+            license_path.parent.mkdir(parents=True)
+            license_path.write_text("Flutter BSD", encoding="utf-8")
             package_extensions(root, "2.3.4")
             first = {path.name: path.read_bytes() for path in (root / "release").iterdir()}
             package_extensions(root, "2.3.4")
@@ -62,6 +65,7 @@ class BuildTests(unittest.TestCase):
                     self.assertEqual(json.loads(package.read("manifest.json"))["version"], "2.3.4")
                     self.assertIn("background.js", package.namelist())
                     self.assertIn("canvaskit/canvaskit.wasm", package.namelist())
+                    self.assertEqual(package.read("licenses/flutter-cupertino.txt"), b"Flutter BSD")
                     self.assertNotIn("flutter_service_worker.js", package.namelist())
                     self.assertNotIn("canvaskit/chromium/canvaskit.wasm", package.namelist())
             for line in (root / "release" / "SHA256SUMS.txt").read_text().splitlines():
