@@ -207,20 +207,43 @@
     };
   }
 
-  async function importArchive(args, repository = null) {
-    const profile = profiles.decodeArchive(args.archive);
-    if (repository) profile.repository = { url: repository.repositoryUrl };
-    profiles.payload(profile);
+  function validateUpdateArchive(profile, update) {
+    if (profile.id !== update.profile.id) throw new Error('В релизе другое оформление: идентификатор не совпадает');
+    if (profile.version !== update.version) throw new Error('Версия оформления в архиве не совпадает с релизом');
+  }
+
+  function validateCurrentProfile(current, expected) {
+    if (!current || current.updatedAt !== expected.updatedAt || current.version !== expected.version || current.repository?.url !== expected.repository.url) {
+      throw new Error('Оформление изменилось во время загрузки. Проверьте обновления ещё раз');
+    }
+  }
+
+  async function saveProfile(profile, expected) {
     await mutate(async () => {
+      const current = await store.get(profile.id);
+      if (expected) validateCurrentProfile(current, expected);
+      profile.updatedAt = Math.max(profile.updatedAt, (current?.updatedAt ?? 0) + 1);
       const available = (await store.all()).filter((item) => item.id !== profile.id);
       if (available.length >= profiles.LIMITS.profiles) throw new Error('Можно хранить до 50 оформлений');
       if (available.reduce((size, item) => size + item.size, profile.size) > profiles.LIMITS.storage) throw new Error('Хранилище оформлений заполнено (64 МБ)');
       await store.put(profile);
     });
-    const tab = await target(args.tabId);
-    if (supported(tab) && profiles.matches(profile.matches, tab.url)) await queue(tab.id, () => preview(tab.id, profile.id));
+  }
+
+  async function refreshProfile(profile, tabId) {
+    const tab = await target(tabId).catch(() => null);
+    if (supported(tab) && profiles.matches(profile.matches, tab.url)) await queue(tab.id, () => preview(tab.id, profile.id)).catch(console.warn);
     const { selections } = await settings();
     for (const [origin, id] of Object.entries(selections)) if (id === profile.id) await updateOrigin(origin);
+  }
+
+  async function importArchive(args, repository = null, update = null) {
+    const profile = profiles.decodeArchive(args.archive);
+    if (update) validateUpdateArchive(profile, update);
+    if (repository) profile.repository = { url: repository.repositoryUrl };
+    profiles.payload(profile);
+    await saveProfile(profile, update?.profile);
+    await refreshProfile(profile, args.tabId);
     return { message: 'Оформление добавлено', id: profile.id };
   }
 
@@ -300,6 +323,29 @@
     return importArchive({ ...args, archive: await PageForgeRepositories.download(args.url) }, repository);
   }
 
+  function profileUpdate(profile, preferences) {
+    if (!profile) throw new Error('Оформление не найдено');
+    if (!profile.repository) throw new Error('Для этого оформления не сохранён репозиторий. Добавьте его по ссылке');
+    const update = preferences.updates.profiles?.[profile.id];
+    if (update?.repositoryUrl !== profile.repository.url || !PageForgeRepositories.newer(update.version, profile.version)) {
+      throw new Error('Сначала проверьте обновления: новая версия не найдена');
+    }
+    const repository = PageForgeRepositories.source(update.url);
+    const addresses = ['', 'v'].map((prefix) => `${profile.repository.url}/releases/tag/${prefix}${update.version}`);
+    if (repository.repositoryUrl !== profile.repository.url || !addresses.includes(update.url)) throw new Error('Некорректная ссылка на релиз оформления');
+    return update;
+  }
+
+  async function updateProfile(args) {
+    if (!await api.permissions.contains({ origins: PageForgeRepositories.origins })) throw new Error('Для обновления оформления нужен доступ к GitHub');
+    const profile = await store.get(args.id);
+    const update = profileUpdate(profile, await settings());
+    const repository = PageForgeRepositories.source(update.url);
+    const archive = await PageForgeRepositories.download(update.url);
+    const result = await importArchive({ archive, tabId: args.tabId }, repository, { profile, version: update.version });
+    return { ...result, message: `Оформление обновлено до ${update.version}` };
+  }
+
   function sharedUpdateCheck() {
     if (!checkingUpdates) checkingUpdates = checkUpdates().finally(() => { checkingUpdates = null; });
     return checkingUpdates;
@@ -320,7 +366,7 @@
 
   const commands = new Map(Object.entries({
     state, import: importArchive, 'import-repository': importRepository,
-    'check-updates': sharedUpdateCheck, 'open-release': openRelease,
+    'check-updates': sharedUpdateCheck, 'open-release': openRelease, 'update-profile': updateProfile,
     select, delete: remove, export: exportArchive, theme: setTheme,
   }));
 

@@ -28,6 +28,9 @@ class Appearance {
   final ReleaseInfo? update;
   final bool selected;
 
+  bool get canUpdate =>
+      repositoryUrl != null && update?.available == true && update?.url != null;
+
   factory Appearance.fromJson(Map<String, Object?> json) {
     final data = json['preview'] as String?;
     return Appearance(

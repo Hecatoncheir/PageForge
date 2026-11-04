@@ -38,6 +38,9 @@
       PageForgeRepositories.source(args.url);
       return { origins: PageForgeRepositories.origins, error: 'Для загрузки оформления нужен доступ к GitHub' };
     }
+    if (name === 'update-profile') {
+      return { origins: PageForgeRepositories.origins, error: 'Для обновления оформления нужен доступ к GitHub' };
+    }
     if (name === 'check-updates') {
       return { origins: [PageForgeRepositories.origins[0]], error: 'Для проверки релизов нужен доступ к GitHub' };
     }

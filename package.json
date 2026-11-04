@@ -7,7 +7,7 @@
     "lint:firefox": "node tools/lint-firefox.mjs",
     "test:browser": "node tools/smoke-extension.mjs",
     "test:design": "node tools/test-design.mjs",
-    "test:profiles": "node --test tools/profiles.test.mjs tools/downloads.test.mjs tools/repositories.test.mjs tools/bridge.test.mjs"
+    "test:profiles": "node --test tools/profiles.test.mjs tools/downloads.test.mjs tools/repositories.test.mjs tools/bridge.test.mjs tools/runtime-updates.test.mjs"
   },
   "engines": {
     "node": ">=24"

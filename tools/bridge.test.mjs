@@ -25,6 +25,7 @@ function bridge(request = async () => true) {
 for (const [command, args, origins] of [
   ['select', { id: 'theme', originPattern: 'https://example.com/*' }, ['https://example.com/*']],
   ['import-repository', { url: 'https://github.com/owner/repo' }, PageForgeRepositories.origins],
+  ['update-profile', { id: 'theme' }, PageForgeRepositories.origins],
   ['check-updates', {}, ['https://api.github.com/*']],
 ]) {
   test(`Запрос разрешения ${command} начинается в том же вызове, что действие пользователя`, async () => {
@@ -51,5 +52,12 @@ test('Неверная ссылка отклоняется до запроса �
   const response = JSON.parse(await api.command('import-repository', JSON.stringify({ url: 'https://evil.example/owner/repo' })));
   assert.ok(response.error);
   assert.equal(requested, false);
+  assert.equal(calls.length, 0);
+});
+
+test('Отказ в доступе к GitHub не запускает обновление оформления', async () => {
+  const { api, calls } = bridge(async () => false);
+  const response = JSON.parse(await api.command('update-profile', JSON.stringify({ id: 'theme' })));
+  assert.equal(response.error, 'Для обновления оформления нужен доступ к GitHub');
   assert.equal(calls.length, 0);
 });

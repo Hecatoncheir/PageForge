@@ -124,6 +124,12 @@ class HomeCubit extends Cubit<HomeState> {
   );
   Future<void> checkUpdates() =>
       _run(() => _repository.execute('check-updates', {}));
+  Future<void> updateAppearance(String id) => _run(
+    () => _repository.execute('update-profile', {
+      'id': id,
+      'tabId': state.context?.tabId,
+    }),
+  );
   Future<void> openRelease(String url) =>
       _run(() => _repository.execute('open-release', {'url': url}));
   Future<void> toggleTheme() => _run(

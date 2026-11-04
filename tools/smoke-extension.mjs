@@ -211,6 +211,10 @@ try {
     'repo-sha/profile.json': strToU8(JSON.stringify({ schemaVersion: 1, id: 'repository', name: 'Из репозитория', version: '1.0.0', mode: 'css', matches: ['http://127.0.0.1/*'] })),
     'repo-sha/styles.css': strToU8('body { background: #32302f !important; }'),
   });
+  const repositoryUpdateZip = zipSync({
+    'repo-sha/profile.json': strToU8(JSON.stringify({ schemaVersion: 1, id: 'repository', name: 'Из репозитория', version: '1.0.1', mode: 'css', matches: ['http://127.0.0.1/*'] })),
+    'repo-sha/styles.css': strToU8('body { background: #3c3836 !important; }'),
+  });
   await worker.evaluate((data) => {
     const originalFetch = globalThis.fetch;
     globalThis.fetch = async (url, options) => {
@@ -221,12 +225,13 @@ try {
         Object.defineProperty(response, 'url', { value: url });
         return response;
       }
-      if (url !== 'https://api.github.com/repos/fixture/theme/zipball/HEAD') return originalFetch(url, options);
-      const response = new Response(new Uint8Array(data));
-      Object.defineProperty(response, 'url', { value: 'https://codeload.github.com/fixture/theme/legacy.zip/HEAD' });
+      const ref = String(url).replace('https://api.github.com/repos/fixture/theme/zipball/', '');
+      if (!['HEAD', 'v1.0.1'].includes(ref)) return originalFetch(url, options);
+      const response = new Response(new Uint8Array(ref === 'HEAD' ? data.initial : data.update));
+      Object.defineProperty(response, 'url', { value: `https://codeload.github.com/fixture/theme/legacy.zip/${ref}` });
       return response;
     };
-  }, [...repositoryZip]);
+  }, { initial: [...repositoryZip], update: [...repositoryUpdateZip] });
   await popup.getByRole('button', { name: 'Разработка', exact: true }).click();
   const deniedImport = await popup.evaluate(async () => {
     const request = chrome.permissions.request;
@@ -256,6 +261,26 @@ try {
   await popup.getByRole('button', { name: 'Открыть релиз Из репозитория', exact: true }).click();
   assert.equal(await worker.evaluate(() => globalThis.__openedRelease), 'https://github.com/fixture/theme/releases/tag/v1.0.1');
   await worker.evaluate(() => { chrome.tabs.create = globalThis.__originalCreateTab; });
+  const deniedUpdate = await popup.evaluate(async () => {
+    const request = chrome.permissions.request;
+    chrome.permissions.request = async () => false;
+    try { return JSON.parse(await pageForge.command('update-profile', JSON.stringify({ id: 'repository' }))); }
+    finally { chrome.permissions.request = request; }
+  });
+  assert.match(deniedUpdate.error, /Для обновления оформления нужен доступ к GitHub/);
+  assert.equal((await command('state', { tabId })).library.find((profile) => profile.id === 'repository').version, '1.0.0');
+  await popup.getByRole('button', { name: 'Обновить Из репозитория', exact: true }).click();
+  await site.waitForFunction(() => getComputedStyle(document.body).backgroundColor === 'rgb(60, 56, 54)');
+  await popup.getByRole('button', { name: 'Обновить Из репозитория', exact: true }).waitFor({ state: 'hidden' });
+  await popup.getByText('Все оформления', { exact: true }).waitFor();
+  const installedState = await command('state', { tabId });
+  assert.equal(installedState.selectedId, 'repository');
+  const updatedProfile = installedState.library.find((profile) => profile.id === 'repository');
+  assert.equal(updatedProfile.version, '1.0.1');
+  assert.equal(updatedProfile.repositoryUrl, 'https://github.com/fixture/theme');
+  assert.equal(updatedProfile.selected, true);
+  assert.equal(updatedProfile.update.available, false);
+  await popup.screenshot({ path: path.join(diagnostics, 'extension-updated.png'), animations: 'disabled' });
   await popup.getByRole('button', { name: 'Удалить Из репозитория', exact: true }).click();
   await site.waitForFunction(() => getComputedStyle(document.body).backgroundColor === 'rgb(255, 255, 255)');
   await popup.getByRole('button', { name: 'К текущему сайту', exact: true }).click();
