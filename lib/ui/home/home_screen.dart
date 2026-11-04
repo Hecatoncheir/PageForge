@@ -204,9 +204,9 @@ class _ModeSelector extends StatelessWidget {
     return DecoratedBox(
       decoration: ShapeDecoration(
         color: colors.surfaceContainerLow,
-        shape: RoundedSuperellipseBorder(
+        shape: RoundedRectangleBorder(
           side: BorderSide(color: colors.outline),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(10),
         ),
       ),
       child: PageForgeSlidingSegmentedControl<HomeTab>(
@@ -214,7 +214,7 @@ class _ModeSelector extends StatelessWidget {
         backgroundColor: Colors.transparent,
         thumbColor: colors.surfaceContainerHighest,
         showThumbShadow: Theme.of(context).brightness == Brightness.dark,
-        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
         onValueChanged: (selected) {
           if (selected != null) onChanged(selected);
         },
