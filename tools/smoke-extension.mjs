@@ -40,6 +40,16 @@ async function launch() {
     args: [`--disable-extensions-except=${extensionPath}`, `--load-extension=${extensionPath}`],
   });
   worker = context.serviceWorkers()[0] ?? await context.waitForEvent('serviceworker');
+  // Playwright сохраняет загрузки во временные файлы с UUID.
+  // Проверяем имя в настоящем вызове API, сохраняя сам вызов download.
+  await worker.evaluate(() => {
+    globalThis.__pageForgeDownloadNames = [];
+    const download = chrome.downloads.download.bind(chrome.downloads);
+    chrome.downloads.download = (options) => {
+      globalThis.__pageForgeDownloadNames.push(options.filename);
+      return download(options);
+    };
+  });
   const url = new URL(worker.url());
   origin = `${url.protocol}//${url.hostname}`;
 }
@@ -85,7 +95,7 @@ async function exportedFiles(tabId, id) {
   const result = await command('export', { tabId, id });
   assert.equal(result.error, undefined);
   const [download] = await worker.evaluate((downloadId) => chrome.downloads.search({ id: downloadId }), result.downloadId);
-  assert.match(download.filename, /[\\/]127\.0\.0\.1(?: \(\d+\))?\.zip$/);
+  assert.equal(await worker.evaluate(() => globalThis.__pageForgeDownloadNames.at(-1)), '127.0.0.1.zip');
   assert.ok(download.url.startsWith('data:application/zip;base64,'));
   return unzipSync(Buffer.from(download.url.split(',')[1], 'base64'));
 }
