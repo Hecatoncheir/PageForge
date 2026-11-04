@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="PageForge — свой способ отображения для каждого сайта. Интерактивная концепция расширения для Chrome и Firefox.">
+  <meta name="description" content="PageForge — расширение для Chrome и Firefox. Выбирайте собственное оформление привычных сайтов.">
   <title>PageForge — интернет на свой лад</title>
   <link rel="icon" href="assets/app-icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="tokens.css">
@@ -14,8 +14,7 @@
     <header class="site-header">
       <a class="wordmark" href="index.html" aria-label="PageForge — главная"><svg aria-hidden="true"><use href="assets/marks.svg#forge"></use></svg>PageForge</a>
       <nav aria-label="Навигация">
-        <a href="prototype.html">Прототип <span>↗</span></a>
-        <a href="brand.html">Айдентика</a>
+        <a href="https://github.com/Hecatoncheir/PageForge/releases">Релизы <span>↗</span></a>
         <a class="icon-button" href="https://github.com/Hecatoncheir/PageForge" aria-label="GitHub" data-icon="github"></a>
         <button class="icon-button" data-theme-toggle aria-label="Светлая тема"></button>
       </nav>
@@ -27,7 +26,7 @@
         <h1>Те же сайты.<br><span>Другой взгляд.</span></h1>
         <p class="hero-description">Меняйте оформление и структуру страниц.<br>Выбирайте своё — для каждого сайта.</p>
         <div class="hero-actions">
-          <a class="button" href="prototype.html">Попробовать прототип <span data-icon="arrow"></span></a>
+          <a class="button" href="https://github.com/Hecatoncheir/PageForge/releases">Релизы на GitHub <span data-icon="download"></span></a>
           <a class="source-link" href="https://github.com/Hecatoncheir/PageForge">Исходный код <span data-icon="code"></span></a>
         </div>
         <div class="compatibility"><span class="browser-symbol chrome-symbol"></span>Chrome <span class="browser-symbol firefox-symbol"></span>Firefox <span class="version mono">В РАЗРАБОТКЕ</span></div>
@@ -47,14 +46,22 @@
             <div class="original-noise">НОВОСТИ · ПОДПИСКА · РЕКОМЕНДАЦИИ · ЕЩЁ</div>
           </div>
         </div>
-        <div class="popup-preview"><iframe src="prototype.html?embed=1" title="Попробуйте выбрать другое оформление"></iframe></div>
-        <div class="stage-note"><span class="sketch-arrow">↳</span> Выберите свой вариант</div>
+        <div class="popup-preview" role="img" aria-label="Пример интерфейса установленного расширения PageForge">
+          <div class="static-app" aria-hidden="true">
+            <div class="static-segmented"><span>Отображение</span><span>Разработка</span></div>
+            <div class="static-header"><span class="wordmark"><svg><use href="assets/marks.svg#forge"></use></svg>PageForge</span><span class="mono">journal.example</span></div>
+            <div class="static-original"><span data-icon="reset"></span>Исходное отображение<span>○</span></div>
+            <div class="static-grid"></div>
+            <div class="static-footer"><i></i>Только для этого сайта<span class="mono">ZIP ↔</span></div>
+          </div>
+        </div>
+        <div class="stage-note"><span class="sketch-arrow">↳</span> Ваше оформление. В вашем браузере.</div>
       </section>
     </main>
 
     <footer class="site-footer">
       <span>Знакомый интернет. Личный почерк.</span>
-      <div><span><i class="tiny-dot"></i> Свои оформления</span><span>ZIP туда и обратно</span><a href="brand.html">Сделано с искрой <span data-icon="spark"></span></a></div>
+      <div><span><i class="tiny-dot"></i> Свои оформления</span><span>ZIP туда и обратно</span><span>Сделано с искрой <span data-icon="spark"></span></span></div>
     </footer>
   </div>
   <script src="shared.js"></script>

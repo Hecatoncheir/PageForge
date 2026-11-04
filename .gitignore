@@ -13,4 +13,5 @@ web/.last_build_id
 __pycache__/
 *.pyc
 /design/reference/
+/site-dist/
 

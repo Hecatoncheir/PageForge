@@ -32,6 +32,8 @@ try {
     await page.setViewportSize(viewport);
     await page.goto(`${base}/index.html?theme=dark`);
     await page.getByRole('heading', { name: 'Те же сайты. Другой взгляд.', exact: true }).waitFor();
+    assert.equal(await page.locator('a[href*="prototype"], a[href*="brand.html"]').count(), 0);
+    assert.equal(await page.locator('iframe').count(), 0);
     await page.evaluate(() => document.fonts.ready);
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Горизонтальная прокрутка');
     if (viewport.width >= 1300) {
