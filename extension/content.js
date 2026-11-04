@@ -1,0 +1,149 @@
+(() => {
+  if (globalThis.__pageForgeEngine) return;
+  globalThis.__pageForgeEngine = true;
+  const api = globalThis.browser ?? globalThis.chrome;
+  let current = null;
+  let root = null;
+  let observer = null;
+  let updateTimer;
+  const allowedTags = new Set('A ARTICLE ASIDE B BLOCKQUOTE BR BUTTON CAPTION CODE COL COLGROUP DD DETAILS DIV DL DT EM FIGCAPTION FIGURE FOOTER H1 H2 H3 H4 H5 H6 HEADER HR I IMG LI MAIN NAV OL P PICTURE PRE SECTION SMALL SOURCE SPAN STRONG SUMMARY TABLE TBODY TD TH THEAD TIME TR U UL'.split(' '));
+
+  function safeUrl(value, image = false) {
+    if (value.startsWith('data:')) return image && /^data:image\//i.test(value) ? value : '';
+    try {
+      const url = new URL(value, location.href);
+      return ['http:', 'https:', 'mailto:', 'tel:'].includes(url.protocol) ? url.href : '';
+    } catch { return ''; }
+  }
+
+  function clean(element, assets = {}) {
+    for (const node of [...element.querySelectorAll('*')]) {
+      if (!allowedTags.has(node.tagName)) { node.remove(); continue; }
+      for (const attribute of [...node.attributes]) {
+        const name = attribute.name.toLowerCase();
+        if (!['id', 'class', 'title', 'alt', 'href', 'src', 'role', 'width', 'height', 'colspan', 'rowspan', 'datetime', 'open', 'type'].includes(name) && !name.startsWith('aria-')) node.removeAttribute(name);
+      }
+      if (node.hasAttribute('src')) node.setAttribute('src', assets[node.getAttribute('src')] ?? safeUrl(node.getAttribute('src'), true));
+      if (node.hasAttribute('href')) node.setAttribute('href', safeUrl(node.getAttribute('href')));
+      if (node.tagName === 'BUTTON') node.setAttribute('type', 'button');
+      if (node.tagName === 'A') node.setAttribute('rel', 'noopener noreferrer');
+    }
+    return element;
+  }
+
+  function sourceElement(selector) {
+    return [...document.querySelectorAll(selector)].find((element) => !root?.contains(element));
+  }
+
+  function bind() {
+    if (!root || !current) return;
+    for (const binding of current.rules.bindings) {
+      const source = sourceElement(binding.source);
+      const targets = root.querySelectorAll(binding.target);
+      if (!source) continue;
+      for (const target of targets) {
+        if (binding.kind === 'text' && target.textContent !== source.textContent) target.textContent = source.textContent;
+        if (binding.kind === 'html') {
+          const copy = document.createElement('div');
+          copy.append(...[...source.childNodes].map((node) => node.cloneNode(true)));
+          clean(copy, current.assets);
+          if (target.innerHTML !== copy.innerHTML) target.replaceChildren(...copy.childNodes);
+        }
+        if (binding.kind === 'href' || binding.kind === 'src') {
+          const value = safeUrl(source.getAttribute(binding.kind) ?? '', binding.kind === 'src');
+          if (target.getAttribute(binding.kind) !== value) target.setAttribute(binding.kind, value);
+        }
+      }
+    }
+  }
+
+  function clear() {
+    observer?.disconnect();
+    observer = null;
+    clearTimeout(updateTimer);
+    root?.remove();
+    root = null;
+    current = null;
+  }
+
+  function apply(payload) {
+    clear();
+    current = payload;
+    for (const selector of payload.rules.hide) document.querySelector(selector);
+    if (payload.mode !== 'layout') return;
+    for (const binding of payload.rules.bindings) {
+      document.querySelector(binding.source);
+      document.createElement('div').querySelector(binding.target);
+    }
+    const parsed = new DOMParser().parseFromString(payload.template, 'text/html');
+    clean(parsed.body, payload.assets);
+    root = document.createElement('div');
+    root.dataset.pageforgeRoot = '';
+    root.className = 'pageforge-root';
+    root.append(...parsed.body.childNodes);
+    document.body.append(root);
+    root.addEventListener('click', (event) => {
+      for (const binding of current?.rules.bindings ?? []) {
+        if (binding.kind !== 'click' || !event.target.closest(binding.target)) continue;
+        event.preventDefault();
+        sourceElement(binding.source)?.click();
+        break;
+      }
+    });
+    bind();
+    observer = new MutationObserver((records) => {
+      if (!records.some((record) => !root?.contains(record.target))) return;
+      clearTimeout(updateTimer);
+      updateTimer = setTimeout(() => {
+        if (root && !root.isConnected) document.body.append(root);
+        bind();
+      }, 80);
+    });
+    observer.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true });
+  }
+
+  function snapshot() {
+    const body = document.createElement('div');
+    for (const node of document.body.childNodes) if (node !== root) body.append(node.cloneNode(true));
+    clean(body);
+    for (const node of body.querySelectorAll('[href], [src]')) {
+      for (const attribute of ['href', 'src']) {
+        if (!node.hasAttribute(attribute)) continue;
+        try { const url = new URL(node.getAttribute(attribute)); url.search = ''; url.hash = ''; node.setAttribute(attribute, url.href); } catch { node.removeAttribute(attribute); }
+      }
+    }
+    let css = '';
+    for (const sheet of document.styleSheets) {
+      try { for (const rule of sheet.cssRules) if (css.length < 1024 * 1024) css += `${rule.cssText}\n`; } catch { /* Чужие стили могут быть недоступны по правилам браузера. */ }
+    }
+    const computed = [...document.querySelectorAll('body, main, article, h1, h2, p, a, button')].filter((element) => !root?.contains(element)).slice(0, 200).map((element) => {
+      const style = getComputedStyle(element);
+      return { tag: element.tagName.toLowerCase(), id: element.id, class: element.className, display: style.display, color: style.color, background: style.backgroundColor, font: style.font, margin: style.margin, padding: style.padding, width: style.width };
+    });
+    if (body.innerHTML.length > 2 * 1024 * 1024) throw new Error('Страница слишком большая для справочного снимка');
+    const title = document.createElement('title');
+    title.textContent = document.title;
+    return { html: `<!doctype html><html lang="${document.documentElement.lang.replace(/[^a-z-]/gi, '') || 'ru'}"><head><meta charset="utf-8">${title.outerHTML}</head><body>${body.innerHTML}</body></html>`, css, computed };
+  }
+
+  async function handle(message) {
+    if (message.action === 'current') return current;
+    if (message.action === 'clear') { clear(); return null; }
+    if (message.action === 'apply') { apply(message.payload); return null; }
+    if (message.action === 'snapshot') return snapshot();
+    if (message.action === 'viewport') return { x: scrollX, y: scrollY };
+    if (message.action === 'scroll') { scrollTo({ left: message.payload.x, top: message.payload.y, behavior: 'instant' }); return null; }
+    if (message.action === 'ready') {
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      return true;
+    }
+    throw new Error('Неизвестная команда страницы');
+  }
+
+  api.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (sender.id !== api.runtime.id || message.type !== 'pageforge:engine') return false;
+    handle(message).then((data) => sendResponse({ data }), (error) => sendResponse({ error: error.message }));
+    return true;
+  });
+  void api.runtime.sendMessage({ type: 'pageforge:document-ready' }).catch(() => {});
+})();

@@ -1,9 +1,10 @@
 {
   "manifest_version": 3,
   "name": "PageForge",
-  "description": "Персональные варианты отображения сайтов. Ранняя версия интерфейса.",
+  "description": "Собственные стили и разметка сайтов. Импорт и выгрузка оформлений в ZIP.",
   "version": "0.1.0",
-  "permissions": ["activeTab"],
+  "permissions": ["activeTab", "storage", "scripting", "downloads"],
+  "optional_host_permissions": ["http://*/*", "https://*/*"],
   "action": {
     "default_title": "PageForge",
     "default_popup": "index.html"

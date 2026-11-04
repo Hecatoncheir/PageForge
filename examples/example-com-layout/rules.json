@@ -1,0 +1,8 @@
+{
+  "hide": [],
+  "bindings": [
+    { "source": "h1", "target": "#title", "kind": "text" },
+    { "source": "p", "target": "#summary", "kind": "html" },
+    { "source": "a", "target": "#learn", "kind": "href" }
+  ]
+}

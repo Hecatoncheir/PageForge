@@ -24,7 +24,8 @@ class BuildTests(unittest.TestCase):
             self.assertEqual(manifest["background"], {"service_worker": "background.js"})
             self.assertNotIn("browser_specific_settings", manifest)
         firefox = browser_manifest(base, "firefox", "1.2.3")
-        self.assertEqual(firefox["background"], {"scripts": ["background.js"]})
+        self.assertIn("background.js", firefox["background"]["scripts"])
+        self.assertNotIn("service_worker", firefox["background"])
         self.assertIn("id", firefox["browser_specific_settings"]["gecko"])
         self.assertNotIn("background", base)
 
@@ -34,7 +35,7 @@ class BuildTests(unittest.TestCase):
             for name in (
                 "index.html", "main.dart.js", "flutter_bootstrap.js", "bridge.js",
                 "canvaskit/canvaskit.js", "canvaskit/canvaskit.wasm",
-                "assets/assets/fonts/Roboto-Regular.ttf", "canvaskit/chromium/canvaskit.wasm",
+                "assets/design/assets/fonts/NunitoSans-Variable.ttf", "canvaskit/chromium/canvaskit.wasm",
                 "flutter_service_worker.js",
             ):
                 path = root / "build" / "web" / name
@@ -44,8 +45,11 @@ class BuildTests(unittest.TestCase):
             (root / "extension" / "icons" / "icon-16.png").write_bytes(b"fixture")
             (root / "extension" / "background.js").write_text("fixture", encoding="utf-8")
             (root / "extension" / "manifest.json").write_text('{"manifest_version":3}', encoding="utf-8")
-            (root / "assets" / "fonts").mkdir(parents=True)
-            (root / "assets" / "fonts" / "LICENSE.txt").write_text("fixture", encoding="utf-8")
+            (root / "design" / "assets" / "fonts").mkdir(parents=True)
+            (root / "design" / "assets" / "fonts" / "Nunito-OFL.txt").write_text("fixture", encoding="utf-8")
+            (root / "design" / "assets" / "vendor").mkdir()
+            for name in ("fflate.js", "fflate-LICENSE.txt"):
+                (root / "design" / "assets" / "vendor" / name).write_text("fixture", encoding="utf-8")
             package_extensions(root, "2.3.4")
             first = {path.name: path.read_bytes() for path in (root / "release").iterdir()}
             package_extensions(root, "2.3.4")

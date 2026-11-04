@@ -35,7 +35,7 @@ def project_version(root=ROOT):
 def browser_manifest(base, browser, version):
     manifest = {**base, "version": normalize_version(version)}
     if browser == "firefox":
-        manifest["background"] = {"scripts": ["background.js"]}
+        manifest["background"] = {"scripts": ["vendor/fflate.js", "profiles.js", "store.js", "runtime.js", "background.js"]}
         manifest["browser_specific_settings"] = {
             "gecko_android": {"strict_min_version": "142.0"},
             "gecko": {
@@ -80,7 +80,7 @@ def package_extensions(root, version):
     required = (
         "index.html", "main.dart.js", "flutter_bootstrap.js", "bridge.js",
         "canvaskit/canvaskit.js", "canvaskit/canvaskit.wasm",
-        "assets/assets/fonts/Roboto-Regular.ttf",
+        "assets/design/assets/fonts/NunitoSans-Variable.ttf",
     )
     for filename in required:
         if not (web / filename).is_file():
@@ -105,9 +105,15 @@ def package_extensions(root, version):
             destination = target / relative
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(path, destination)
-        shutil.copyfile(root / "extension" / "background.js", target / "background.js")
+        for script in (root / "extension").glob("*.js"):
+            shutil.copyfile(script, target / script.name)
         shutil.copytree(root / "extension" / "icons", target / "icons")
-        shutil.copyfile(root / "assets" / "fonts" / "LICENSE.txt", target / "ROBOTO-LICENSE.txt")
+        (target / "vendor").mkdir()
+        for filename in ("fflate.js", "fflate-LICENSE.txt"):
+            shutil.copyfile(root / "design" / "assets" / "vendor" / filename, target / "vendor" / filename)
+        (target / "licenses").mkdir()
+        for license_file in (root / "design" / "assets" / "fonts").glob("*-OFL.txt"):
+            shutil.copyfile(license_file, target / "licenses" / license_file.name)
         manifest = browser_manifest(base, browser, version)
         (target / "manifest.json").write_text(
             json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
@@ -117,6 +123,14 @@ def package_extensions(root, version):
         digest = hashlib.sha256(archive.read_bytes()).hexdigest()
         checksums.append(f"{digest}  {archive.name}")
         print(archive.name)
+    examples = root / "examples"
+    if examples.exists():
+        for source in sorted(examples.iterdir()):
+            if not source.is_dir() or not (source / "profile.json").is_file():
+                continue
+            archive = release / f"pageforge-theme-{source.name}.zip"
+            make_zip(source, archive)
+            checksums.append(f"{hashlib.sha256(archive.read_bytes()).hexdigest()}  {archive.name}")
     (release / "SHA256SUMS.txt").write_text("\n".join(checksums) + "\n", encoding="utf-8")
 
 

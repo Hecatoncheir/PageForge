@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "id": "example-com-paper",
+  "name": "Бумага",
+  "version": "1.0.0",
+  "mode": "css",
+  "matches": ["https://example.com/*"]
+}

@@ -6,7 +6,8 @@
   "scripts": {
     "lint:firefox": "node tools/lint-firefox.mjs",
     "test:browser": "node tools/smoke-extension.mjs",
-    "test:design": "node tools/test-design.mjs"
+    "test:design": "node tools/test-design.mjs",
+    "test:profiles": "node --test tools/profiles.test.mjs"
   },
   "engines": {
     "node": ">=24"

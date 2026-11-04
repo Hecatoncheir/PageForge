@@ -42,6 +42,7 @@ runs:
       shell: bash
       run: |
         flutter test
+        npm run test:profiles
         python -m unittest discover -s tools -p 'test_*.py' -v
 
     - name: Собрать Flutter и пакеты браузеров

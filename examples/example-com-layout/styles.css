@@ -1,0 +1,9 @@
+html, body { margin: 0 !important; background: #282828 !important; color: #fbf1c7 !important; }
+.pageforge-root { min-height: 100vh; font-family: system-ui, sans-serif; }
+.pageforge-layout { min-height: 100vh; display: grid; grid-template-rows: auto 1fr auto; max-width: 960px; padding: 32px; margin: auto; }
+.pageforge-layout header, .pageforge-layout footer { color: #bdae93; font: 11px monospace; letter-spacing: 1px; }
+.pageforge-layout section { align-self: center; padding: 48px 0; }
+.pageforge-layout .label { color: #fe8019; font-size: 14px; }
+.pageforge-layout h1 { font-size: clamp(40px, 8vw, 88px); line-height: 1; letter-spacing: -3px; margin: 24px 0; }
+.pageforge-layout article { max-width: 540px; line-height: 1.8; color: #bdae93; }
+.pageforge-layout a { display: inline-block; margin-top: 30px; padding: 15px 22px; background: #fe8019; color: #282828; border-radius: 12px; text-decoration: none; font-weight: 700; }

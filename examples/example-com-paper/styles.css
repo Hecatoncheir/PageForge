@@ -1,0 +1,21 @@
+body {
+  margin: 0 !important;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: #fbf1c7 !important;
+  color: #282828 !important;
+  font-family: system-ui, sans-serif !important;
+}
+body > div {
+  width: min(540px, calc(100vw - 64px)) !important;
+  margin: 0 !important;
+  padding: 38px !important;
+  background: #f2e5bc !important;
+  border: 1px solid #d5c4a1;
+  border-radius: 24px !important;
+  box-shadow: none !important;
+}
+h1 { font-size: 38px; letter-spacing: -1px; }
+p { line-height: 1.8; }
+a { color: #af3a03 !important; }
