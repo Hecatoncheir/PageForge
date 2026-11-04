@@ -151,16 +151,17 @@
       profile.previewError = 'Откройте сайт и расширение, чтобы подготовить превью';
       console.info(`PageForge: превью отложено (${error.message})`);
     } finally {
-      if (changed) {
-        const currentTab = await target(tabId).catch(() => null);
-        if (currentTab?.url === address) {
-          await replacePayload(tabId, previous).catch((error) => console.warn(error.message));
-          if (viewport) await engine(tabId, 'scroll', viewport).catch(() => {});
-        }
-      }
+      if (changed) await restorePreview(tabId, address, previous, viewport);
       const latest = await store.get(profileId);
       if (latest?.updatedAt === profile.updatedAt) await store.put(profile);
     }
+  }
+
+  async function restorePreview(tabId, address, previous, viewport) {
+    const currentTab = await target(tabId).catch(() => null);
+    if (currentTab?.url !== address) return;
+    await replacePayload(tabId, previous).catch((error) => console.warn(error.message));
+    if (viewport) await engine(tabId, 'scroll', viewport).catch(() => {});
   }
 
   async function pendingPreviews(tabId, force = false) {
@@ -293,30 +294,40 @@
     for (const tab of await api.tabs.query({})) if (supported(tab)) void queue(tab.id, () => applySelection(tab.id)).catch(() => {});
   }
 
+  async function importRepository(args) {
+    const repository = PageForgeRepositories.source(args.url);
+    if (!await api.permissions.contains({ origins: PageForgeRepositories.origins })) throw new Error('Для загрузки оформления нужен доступ к GitHub');
+    return importArchive({ ...args, archive: await PageForgeRepositories.download(args.url) }, repository);
+  }
+
+  function sharedUpdateCheck() {
+    if (!checkingUpdates) checkingUpdates = checkUpdates().finally(() => { checkingUpdates = null; });
+    return checkingUpdates;
+  }
+
+  async function openRelease(args) {
+    const url = new URL(args.url);
+    PageForgeRepositories.source(url.href);
+    if (!/^\/[^/]+\/[^/]+\/releases\/tag\/[^/]+$/.test(url.pathname)) throw new Error('Нужна ссылка на релиз GitHub');
+    await api.tabs.create({ url: url.href });
+    return {};
+  }
+
+  async function setTheme(args) {
+    await api.storage.local.set({ theme: args.theme === 'light' ? 'light' : 'dark' });
+    return {};
+  }
+
+  const commands = new Map(Object.entries({
+    state, import: importArchive, 'import-repository': importRepository,
+    'check-updates': sharedUpdateCheck, 'open-release': openRelease,
+    select, delete: remove, export: exportArchive, theme: setTheme,
+  }));
+
   async function handle(command, args = {}) {
-    if (command === 'state') return state(args);
-    if (command === 'import') return importArchive(args);
-    if (command === 'import-repository') {
-      const repository = PageForgeRepositories.source(args.url);
-      if (!await api.permissions.contains({ origins: PageForgeRepositories.origins })) throw new Error('Для загрузки оформления нужен доступ к GitHub');
-      return importArchive({ ...args, archive: await PageForgeRepositories.download(args.url) }, repository);
-    }
-    if (command === 'check-updates') {
-      if (!checkingUpdates) checkingUpdates = checkUpdates().finally(() => { checkingUpdates = null; });
-      return checkingUpdates;
-    }
-    if (command === 'open-release') {
-      const url = new URL(args.url);
-      PageForgeRepositories.source(url.href);
-      if (!/^\/[^/]+\/[^/]+\/releases\/tag\/[^/]+$/.test(url.pathname)) throw new Error('Нужна ссылка на релиз GitHub');
-      await api.tabs.create({ url: url.href });
-      return {};
-    }
-    if (command === 'select') return select(args);
-    if (command === 'delete') return remove(args);
-    if (command === 'export') return exportArchive(args);
-    if (command === 'theme') { await api.storage.local.set({ theme: args.theme === 'light' ? 'light' : 'dark' }); return {}; }
-    throw new Error('Неизвестная команда расширения');
+    const action = commands.get(command);
+    if (!action) throw new Error('Неизвестная команда расширения');
+    return action(args);
   }
 
   api.tabs.onUpdated.addListener((tabId, change) => {

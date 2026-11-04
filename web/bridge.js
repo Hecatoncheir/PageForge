@@ -17,27 +17,38 @@
 
   async function command(name, args = {}) {
     if (name === 'drop-enabled') { dropEnabled = args.enabled; return {}; }
-    if (!api?.runtime?.id) {
-      if (name === 'state') return { extension: false, supported: false, tabId: -1, siteLabel: 'Предпросмотр интерфейса', version: 'dev', theme: localStorage.getItem('pageforge-theme') ?? 'dark', profiles: [] };
-      if (name === 'theme') { localStorage.setItem('pageforge-theme', args.theme); return {}; }
-      throw new Error('Загрузите собранное расширение в браузер');
-    }
-    if (name === 'select' && args.id) {
-      const granted = await api.permissions.request({ origins: [args.originPattern] });
-      if (!granted) throw new Error('Доступ к сайту не предоставлен');
-    }
-    if (name === 'import-repository') {
-      PageForgeRepositories.source(args.url);
-      const granted = await api.permissions.request({ origins: PageForgeRepositories.origins });
-      if (!granted) throw new Error('Для загрузки оформления нужен доступ к GitHub');
-    }
-    if (name === 'check-updates') {
-      const granted = await api.permissions.request({ origins: [PageForgeRepositories.origins[0]] });
-      if (!granted) throw new Error('Для проверки релизов нужен доступ к GitHub');
-    }
+    if (!api?.runtime?.id) return standaloneCommand(name, args);
+    await requestPermission(name, args);
     const response = await api.runtime.sendMessage({ type: 'pageforge:command', command: name, args: { ...(explicitTab ? { tabId: explicitTab } : {}), ...args } });
     if (response?.error) throw new Error(response.error);
     return response?.data ?? {};
+  }
+
+  function standaloneCommand(name, args) {
+    if (name === 'state') return { extension: false, supported: false, tabId: -1, siteLabel: 'Предпросмотр интерфейса', version: 'dev', theme: localStorage.getItem('pageforge-theme') ?? 'dark', profiles: [] };
+    if (name === 'theme') { localStorage.setItem('pageforge-theme', args.theme); return {}; }
+    throw new Error('Загрузите собранное расширение в браузер');
+  }
+
+  function permissionFor(name, args) {
+    if (name === 'select' && args.id) {
+      return { origins: [args.originPattern], error: 'Доступ к сайту не предоставлен' };
+    }
+    if (name === 'import-repository') {
+      PageForgeRepositories.source(args.url);
+      return { origins: PageForgeRepositories.origins, error: 'Для загрузки оформления нужен доступ к GitHub' };
+    }
+    if (name === 'check-updates') {
+      return { origins: [PageForgeRepositories.origins[0]], error: 'Для проверки релизов нужен доступ к GitHub' };
+    }
+    return null;
+  }
+
+  async function requestPermission(name, args) {
+    const permission = permissionFor(name, args);
+    if (!permission) return;
+    // Запрос начинается до первого await, пока действует жест пользователя.
+    if (!await api.permissions.request({ origins: permission.origins })) throw new Error(permission.error);
   }
 
   async function importFile(file, tabId) {

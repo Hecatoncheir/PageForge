@@ -1,23 +1,40 @@
 (() => {
   const origins = ['https://api.github.com/*', 'https://codeload.github.com/*'];
 
-  function source(value) {
+  function repositoryUrl(value) {
     let url;
     try { url = new URL(value.trim()); } catch { throw new Error('Введите ссылку на открытый репозиторий GitHub'); }
     if (url.protocol !== 'https:' || url.hostname !== 'github.com' || url.port || url.username || url.password || url.search || url.hash) {
       throw new Error('Нужна ссылка вида https://github.com/owner/repo');
     }
-    const parts = url.pathname.replace(/\/+$/, '').split('/').slice(1);
-    const [owner, originalName, kind, ...reference] = parts;
+    return url;
+  }
+
+  function repositoryIdentity(owner, originalName) {
     const name = originalName?.replace(/\.git$/, '');
+    if (!/^[a-z\d][a-z\d-]{0,38}$/i.test(owner ?? '') || !/^[a-z\d_-][a-z\d._-]{0,99}$/i.test(name ?? '')) {
+      throw new Error('Укажите репозиторий или ссылку на его ветку');
+    }
+    return { owner, name };
+  }
+
+  function repositoryReference(parts) {
+    if (!parts.length) return 'HEAD';
+    const [kind, ...reference] = parts;
     const releaseLink = kind === 'releases' && reference[0] === 'tag' && reference.length > 1;
-    if (!/^[a-z\d][a-z\d-]{0,38}$/i.test(owner ?? '') || !/^[a-z\d_-][a-z\d._-]{0,99}$/i.test(name ?? '')
-      || parts.length > 2 && !releaseLink && (!['tree', 'commit'].includes(kind) || !reference.length)) {
+    if (!releaseLink && (!['tree', 'commit'].includes(kind) || !reference.length)) {
       throw new Error('Укажите репозиторий или ссылку на его ветку');
     }
     let ref;
-    try { ref = reference.length ? decodeURIComponent((releaseLink ? reference.slice(1) : reference).join('/')) : 'HEAD'; } catch { throw new Error('Некорректная ссылка на ветку'); }
+    try { ref = decodeURIComponent((releaseLink ? reference.slice(1) : reference).join('/')); } catch { throw new Error('Некорректная ссылка на ветку'); }
     if (!ref || ref.length > 200 || /[\s\\\x00-\x1f]/.test(ref)) throw new Error('Некорректная ссылка на ветку');
+    return ref;
+  }
+
+  function source(value) {
+    const parts = repositoryUrl(value).pathname.replace(/\/+$/, '').split('/').slice(1);
+    const { owner, name } = repositoryIdentity(...parts);
+    const ref = repositoryReference(parts.slice(2));
     return { owner, name, repositoryUrl: `https://github.com/${owner}/${name}`, archiveUrl: `https://api.github.com/repos/${owner}/${name}/zipball/${encodeURIComponent(ref)}` };
   }
 

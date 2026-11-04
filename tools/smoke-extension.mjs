@@ -153,8 +153,15 @@ try {
   await command('delete', { id: 'broken' });
 
   const layout = theme('layout', 'Своя разметка', 'layout', '.pageforge-root { background:#282828;color:#fbf1c7;padding:24px; }', {
-    'layout.html': strToU8('<main><h1 id="title"></h1><p id="value"></p><button id="mirror">Нажать</button><script>window.__pageforgeUnsafe=true</script><img src="x" onerror="window.__pageforgeUnsafe=true"><iframe src="https://remote.invalid"></iframe></main>'),
-    'rules.json': strToU8(JSON.stringify({ hide: [], bindings: [{ source: 'h1', target: '#title', kind: 'text' }, { source: '#counter', target: '#value', kind: 'text' }, { source: '#counter', target: '#mirror', kind: 'click' }] })),
+    'layout.html': strToU8('<main><h1 id="title"></h1><p id="value"></p><button id="mirror">Нажать</button><div id="content"></div><a id="link">Ссылка</a><img id="image"><script>window.__pageforgeUnsafe=true</script><img src="x" onerror="window.__pageforgeUnsafe=true"><iframe src="https://remote.invalid"></iframe></main>'),
+    'rules.json': strToU8(JSON.stringify({ hide: [], bindings: [{ source: 'h1', target: '#title', kind: 'text' }, { source: '#counter', target: '#value', kind: 'text' }, { source: '#counter', target: '#mirror', kind: 'click' }, { source: '#noise', target: '#content', kind: 'html' }, { source: 'body > main > a', target: '#link', kind: 'href' }, { source: '#source-image', target: '#image', kind: 'src' }] })),
+  });
+  await site.evaluate(() => {
+    document.querySelector('#noise').innerHTML = '<strong>Разметка страницы</strong><a href="javascript:alert(1)" onclick="window.__pageforgeUnsafe=true">Опасная ссылка</a><iframe src="about:blank"></iframe>';
+    const image = document.createElement('img');
+    image.id = 'source-image';
+    image.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAEUlEQVR4nGP41yD5H4QZYAwAXfIKWcwh+BsAAAAASUVORK5CYII=';
+    document.querySelector('body > main').append(image);
   });
   await upload(layout);
   await popup.getByRole('button', { name: 'Применить Своя разметка', exact: true }).waitFor();
@@ -163,6 +170,11 @@ try {
   assert.equal(await site.locator('.pageforge-root #title').innerText(), 'Исходный заголовок');
   assert.equal(await site.locator('body > main').isVisible(), false);
   assert.equal(await site.locator('.pageforge-root script, .pageforge-root iframe, .pageforge-root [onerror]').count(), 0);
+  assert.equal(await site.locator('#content strong').innerText(), 'Разметка страницы');
+  assert.equal(await site.locator('#content a').getAttribute('href'), '');
+  assert.equal(await site.locator('#content [onclick]').count(), 0);
+  assert.equal(await site.locator('#link').getAttribute('href'), new URL('/next?token=private-token', address).href);
+  assert.match(await site.locator('#image').getAttribute('src'), /^data:image\/png;base64,/);
   assert.equal(await site.evaluate(() => window.__pageforgeUnsafe), undefined);
   await site.locator('#mirror').click();
   await site.waitForFunction(() => document.querySelector('.pageforge-root #value').textContent === '1');

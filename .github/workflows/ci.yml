@@ -20,6 +20,35 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  complexity:
+    name: Когнитивная сложность
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Подготовить Neovim 0.11.5
+        shell: bash
+        run: |
+          curl --fail --location --retry 3 https://github.com/neovim/neovim/releases/download/v0.11.5/nvim-linux-x86_64.tar.gz --output "$RUNNER_TEMP/nvim.tar.gz"
+          echo "b2f91117be5b5ea39edd7297156dc2a4a8df4add6c95a90809a8df19e7ab6f52  $RUNNER_TEMP/nvim.tar.gz" | sha256sum --check
+          tar -xzf "$RUNNER_TEMP/nvim.tar.gz" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/nvim-linux-x86_64/bin" >> "$GITHUB_PATH"
+
+      - name: Проверить сложность Dart и JavaScript
+        run: python tools/check_complexity.py
+
+      - name: Сохранить отчёт сложности
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: pageforge-complexity
+          path: work/complexity-report.json
+          if-no-files-found: error
+          retention-days: 14
+
   check:
     name: Проверка и сборка
     runs-on: ubuntu-latest

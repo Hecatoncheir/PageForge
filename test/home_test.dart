@@ -4,7 +4,7 @@ import 'package:pageforge/data/repositories/browser_repository.dart';
 import 'package:pageforge/domain/models/browser_context.dart';
 import 'package:pageforge/domain/models/appearance.dart';
 import 'package:pageforge/main.dart';
-import 'package:pageforge/ui/home/home_view_model.dart';
+import 'package:pageforge/ui/home/home_cubit.dart';
 
 void main() {
   testWidgets('Вкладки переключаются в компактном окне без переполнения', (
@@ -40,13 +40,13 @@ void main() {
   });
 
   test('Ошибка браузерного API отображается в состоянии интерфейса', () async {
-    final model = HomeViewModel(
+    final model = HomeCubit(
       BrowserRepository(loader: () async => throw StateError('Недоступно')),
     );
-    addTearDown(model.dispose);
+    addTearDown(model.close);
     await model.load();
-    expect(model.error, 'Не удалось получить сведения о вкладке');
-    expect(model.context, isNull);
+    expect(model.state.error, 'Не удалось получить сведения о вкладке');
+    expect(model.state.context, isNull);
   });
 
   for (final size in [const Size(380, 580), const Size(320, 480)]) {
@@ -145,7 +145,7 @@ void main() {
   test(
     'Ошибка применения не меняет текущий выбор и снимает блокировку',
     () async {
-      final model = HomeViewModel(
+      final model = HomeCubit(
         BrowserRepository(
           loader: () async => const BrowserContext(
             siteLabel: 'example.com',
@@ -156,12 +156,12 @@ void main() {
               throw Exception('Неверное правило'),
         ),
       );
-      addTearDown(model.dispose);
+      addTearDown(model.close);
       await model.load();
       await model.select('new');
-      expect(model.context?.selectedId, 'old');
-      expect(model.busy, false);
-      expect(model.message, 'Неверное правило');
+      expect(model.state.context?.selectedId, 'old');
+      expect(model.state.busy, false);
+      expect(model.state.message, 'Неверное правило');
     },
   );
 
