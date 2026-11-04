@@ -314,7 +314,7 @@ class _AppearancePanel extends StatelessWidget {
                     crossAxisCount: 2,
                     mainAxisSpacing: 12,
                     crossAxisSpacing: 12,
-                        mainAxisExtent: 180,
+                    mainAxisExtent: 180,
                   ),
                   itemCount: appearances.length,
                   itemBuilder: (context, index) => _AppearanceCard(
